@@ -38,7 +38,7 @@ terminal_h = 10
 
 
 """
-   class State describes state of uml-diagram and trigslates to qm format.
+   class State describes state of uml-diagram and translates to qm format.
    Fields:
         name: name of state
         type: state or choice
@@ -135,6 +135,8 @@ def create_actions(raw_triggers: str, source: str, player_signal: [str]) -> [Tri
 
         if trigger_name not in player_signal and trigger_name and trigger_name != "entry" and trigger_name != 'exit':
             player_signal.append(trigger_name)
+        if trigger_name and trigger_name[-1] == ')':
+            trigger_name+='+BASE'
         actions.append(
             Trigger(name=trigger_name, action=action.strip(), source=source, type="internal", guard=guard, target="",
                     id=trigger_id, x=0, y=internal_trigger_height * trigger_id, dx=len(trigger_name)+internal_trigger_delta, dy=0, points=[], action_x=0,
@@ -164,6 +166,7 @@ def create_state_from_node(node: dict, node_type: str, min_x: int, min_y: int, s
     state_entry = state_entry[0] if state_entry else ""
     state_exit = state_exit[0] if state_exit else ""
     triggers = [trig for trig in triggers if trig.name != 'entry' and trig.name != 'exit']
+
     x, y, width, height = get_coordinates(node)
     x = x // divider - min_x // divider + 2
     y = y // divider - min_y // divider + 2
@@ -270,9 +273,12 @@ def update_states_with_edges(states: [State], flat_edges: [dict], start_state: S
                     if guard == 'else':
                         logging.warning("External trigger %s[%s] can't contain 'else'" % (trigger_name, guard))
                 trigger_action = action[1].strip() if len(action) > 1 else ""
+                if trigger_name and trigger_name[-1] == ')':
+                    trigger_name+='+BASE'
             else:
                 trigger_name = ""
                 trigger_action = ""
+                guard = ""
             x, y, dx, dy, points = get_edge_coordinates(edge)
             new_points = []
             for point in points:
@@ -283,10 +289,11 @@ def update_states_with_edges(states: [State], flat_edges: [dict], start_state: S
                 trig_type = "choice_result"
             if target_state.type == "choice":
                 trig_type = "choice_start"
+            print(trigger_name)
             trigger = Trigger(name=trigger_name, type=trig_type, guard=guard, source=old_source, target=old_target, action=trigger_action,
                               id=0,
                               x=(x) // divider, y=(y)// divider, dx=dx // divider, dy=dy // divider, points=new_points, action_x=action_x // divider, action_y=action_y // divider,
-                              action_width=action_width // divider+2)
+                              action_width=action_width // divider+3)
             source_state.trigs.append(trigger)
             if trigger_name and trigger_name not in player_signal:
                 player_signal.append(trigger_name)
@@ -304,7 +311,7 @@ def create_terminate_state(states: [State])->State:
     """
     global_state = get_state_by_id(states, 'global', 'old')
     state = State(name="final?def DESKTOP", type="state", id="last", new_id=["2"], actions="",
-                  entry="""printf("\nBye! Bye!\n"); exit(0);""", exit="", trigs=[],
+                  entry="""printf("Bye! Bye!"); exit(0);""", exit="", trigs=[],
                   x=global_state.x + global_state.width //2 - terminal_w //2,
                   y= states[0].y+states[0].height+5, width=terminal_w, height=terminal_h, parent=None,
                   childs=[])

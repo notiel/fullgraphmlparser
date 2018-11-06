@@ -22,7 +22,7 @@ from lxml import etree
 from string import Template
 from qm import *
 
-documentation = 'test qm file made by Ostranna and ksotar'  # documentation string
+documentation = 'QM file for Dark Tower project made by Notiel (Ostranna)'  # documentation string
 framework = "qpc"  # framework, use qpc for c and qpcpp for cpp
 pack_name = 'SMs'  # name for your state machine package
 stereotype = '0x02'  # some magical constant
@@ -35,9 +35,17 @@ trig_action_coordinates = "0,-2,25,4"  # relative coordinates for trigger label
 
 type_list = ['uint8_t', 'uint16_t', "uint32_t", "int8_t", "int16_t", "int32_t", "uint_fast8_t", "uint_fast16_t"
                                                                                                 "uint_t", "int_t",
-             "enum_t", "QSignal", "QEvt const *", "QTimeEvt", "QHsm", "QMsm", "QActive",
-             "QMActive", "QEQueue", "QMPool", "QPSet", 'void', "void*"]  # list of types from qpc framework
+             "enum_t", "QSignal", "QEvt const *", "QTimeEvt", "QHsm", "QMsm", "QActive", "NearCharacters*",
+             "QMActive", "QEQueue", "QMPool", "QPSet", 'void', "void*", 'Dispatcher*', 'bool', 'QStateHandler', 'KaTetCounters*', 'KaTetLinks*', 'size_t', "int"]  # list of types from qpc framework
 vis_dict = {"public": "0x00", "private": "0x02", "protected": "0x01"}  # codes for visibility of variables
+
+ctor_fields = {}
+
+ctor_code = ""
+
+h_code = ""
+
+cpp_code = ""
 
 
 def get_parameters_data(parameter: str) -> tuple:
@@ -49,13 +57,12 @@ def get_parameters_data(parameter: str) -> tuple:
     data = parameter.split()
     if len(data) < 2:
         return "", "", "", ""
-    if data[0] in type_list:
-        param_type = data[0]
-    else:
+    if not data[0] in type_list:
         return "", "", "", ""
+    param_type = data[0]
     param_name = data[1]
-    param_name.replace(";", "")
-    param_name.replace("/", "")
+    param_name = param_name.replace(";", "")
+    param_name = param_name.replace("/", "")
     param_vis = "0x00"
     param_comment = ""
     if len(data) > 2:
@@ -68,13 +75,50 @@ def get_parameters_data(parameter: str) -> tuple:
     return param_name, param_type, param_vis, param_comment
 
 
-def is_parameter_event_field(parameter:str) -> bool:
+def is_parameter_event_field(parameter: str) -> bool:
     """
     checks if parameter is an event field (starts with #)
     :param parameter: parameter
     :return: true or false
     """
     return parameter and parameter[0] == "#"
+
+
+def is_parameter_ctor_field(parameter: str) -> bool:
+    """
+    checks if parameter is an custom constructor field (starts with $)
+    :param parameter: parameter
+    :return: true or false
+    """
+    return parameter and parameter[0] == "$"
+
+
+def is_parameter_ctor_code(parameter:str) -> bool:
+    """
+    checks if parameter is extra code for constructor (starts with ^)
+    :param parameter: parameter
+    :return: true or false
+    """
+    return parameter and parameter[0] == "^"
+
+
+def is_parameter_h_code(parameter:str) -> bool:
+    """
+    checks if parameter is extra cde for .h template (starts with !)
+    :param parameter: parameter
+    :return: true or false
+    """
+    return parameter and parameter[0] == "!"
+
+
+def is_parameter_cpp_code(parameter:str) -> bool:
+    """
+    checks if parameter is extra cde for .cpp template (starts with ?)
+    :param parameter: parameter
+    :return: true or false
+    """
+    return parameter and parameter[0] == "?"
+
 
 def update_event_fields(parameter: str, event_fields: dict):
     """
@@ -89,21 +133,38 @@ def update_event_fields(parameter: str, event_fields: dict):
         return event_fields
     if data[0] not in type_list:
         return event_fields
-    event_fields[data[0]] = data[1]
+    event_fields[data[1]] = data[0]
     return event_fields
 
 
-def get_event_struct (event_fields: dict, filename: str) -> str:
+def update_ctor_fields(parameter: str, ctor_fields: dict):
+    """
+    function updates dictionary type:name of custom fields of constructor structure (empty by default)
+    :param parameter:
+    :return:
+    """
+    parameter = parameter[1:]
+    parameter= parameter.replace(";", "")
+    data = parameter.split()
+    if len(data) != 2:
+        return ctor_fields
+    ctor_fields[data[1]] = data[0]
+    return ctor_fields
+
+
+def get_event_struct (event_fields: dict, Filename: str) -> str:
     """
     funtion created c code for event struct using fields defined in event_fields dict
     :param event_fields: dict with event fields
     :return: str with event struct
     """
-    event_struct = "\ntypedef struct %s {\n    QEvt super;" %(filename+'QEvt')
+    event_struct = "\ntypedef struct %s {\n    QEvt super;" %(Filename+'QEvt')
     for key in event_fields.keys():
-        event_struct+="\n    %s %s;" % (key, event_fields[key])
-    event_struct+="\n} %s;\n" % (filename+'QEvt')
+        event_struct+="\n    %s %s;" % (event_fields[key], key)
+    event_struct+="\n} %s;\n" % (Filename+'QEvt')
     return event_struct
+
+
 
 def get_parameters_code(event_fields: dict, parameter_text: str, qm_class: etree._Element, qm_documentation: etree._Element):
     """
@@ -112,21 +173,36 @@ def get_parameters_code(event_fields: dict, parameter_text: str, qm_class: etree
     :param qm_class: xml field to add data
     :return:
     """
+    global ctor_code
+    global h_code
+    global cpp_code
     wrong_data = ""
     parameters = parameter_text.split("\n")
     for parameter in parameters:
         parameter = parameter.strip()
         if is_parameter_event_field(parameter):
             update_event_fields(parameter, event_fields)
+            pass
+        if is_parameter_ctor_field(parameter):
+            update_ctor_fields(parameter, ctor_fields)
+            pass
+        if is_parameter_ctor_code(parameter):
+            ctor_code += (parameter[1:]+'\n')
+            pass
+        if is_parameter_h_code(parameter):
+            h_code += (parameter[1:] + '\n')
+            pass
+        if is_parameter_cpp_code(parameter):
+            cpp_code += (parameter[1:] + '\n')
+            pass
         param_name, param_type, param_vis, param_comment = get_parameters_data(parameter)
         if param_name:
-            qm_attribute = etree.SubElement(qm_class, "attribute", name=param_name, type=param_type,
+            _ = etree.SubElement(qm_class, "attribute", name=param_name, type=param_type,
                                             visibility=param_vis, properties="0x00")
-            qm_documentation = etree.SubElement(qm_attribute, "documentation")
-            qm_documentation.text = param_comment
         else:
-            wrong_data += ("\n" + parameter)
-            qm_documentation.text = wrong_data
+            if parameter and not (r'//') in parameter and parameter[0]!="!" and parameter[0]!="?" and parameter[0]!="^" and parameter[0]!="$" and parameter[0]!="#":
+                wrong_data += ("\n" + parameter)
+                qm_documentation.text = wrong_data
 
 
 def get_trig_coordinates(trig: Trigger, states: [State]) -> str:
@@ -509,8 +585,14 @@ def create_qm_constructor(qm_package: etree._Element, Filename: str, filename: s
     """
     qm_ctor = etree.SubElement(qm_package, "operation", name="%s_ctor" % Filename, type="void", visibility="0x00",
                                properties="0x00")
+    _ = etree.SubElement(qm_ctor, "parameter", name="me", type='%s*' % Filename);
+    _ = etree.SubElement(qm_ctor, "parameter", name = "dispatcher", type = 'Dispatcher*')
+    print (ctor_fields)
+    for key in ctor_fields.keys():
+        _ = etree.SubElement(qm_ctor, "parameter", name = key, type = ctor_fields[key])
     qm_code = etree.SubElement(qm_ctor, "code")
-    qm_code.text = "%s *me = &%s;\n QHsm_ctor(&me->super, Q_STATE_CAST(&%s_initial));" % (Filename, filename, Filename)
+    qm_code.text = ctor_code+"me->dispatcher = dispatcher;\nQHsm_ctor(&me->super, Q_STATE_CAST(&%s_initial));" % Filename
+
 
 
 def create_qm_files(qm_model: etree._Element, filenames:[str], player_signal: [str], event_fields:dict):
@@ -525,38 +607,34 @@ def create_qm_files(qm_model: etree._Element, filenames:[str], player_signal: [s
     """
     filenames = [filename[0].lower() + filename[1:] for filename in filenames]
     Filenames = [filename[0].upper() + filename[1:] for filename in filenames]
-    name = '-'.join(filenames)
+    name = '_'.join(filenames)
     qm_directory = etree.SubElement(qm_model, "directory", name=".")
     qm_file = etree.SubElement(qm_directory, "file", name="%s.cpp" % name)
     qm_text = etree.SubElement(qm_file, "text")
     with open(r'.\templates\с_template') as t:
         include = "\n".join(["#include \""+filename+".h\"" for filename in filenames])
-        declare = ""
-        for Filename in Filenames:
-            filename  = Filename[0].lower() + Filename[1:]
-            declare+="\n$declare(SMs::%s)\n\nstatic %s %s; /* the only instance of the %s class */\n\n" \
-                     % (Filename, Filename, filename, Filename)
         consts=""
-        for filename in filenames:
-            consts+='QHsm * const the_%s = (QHsm *) &%s; /* the opaque pointer */\n' %(filename, filename)
         constructors = ""
         for Filename in Filenames:
             constructors+="$define(SMs::%s_ctor)\n$define(SMs::%s)\n\n" % (Filename, Filename)
-        c_code = Template(t.read()).substitute(
-            {"include": include, "declare": declare, "consts": consts, "constructors": constructors})
-    qm_text.text = c_code
+        cppfile_code = Template(t.read()).substitute(
+            {"include": include, "consts": consts, "constructors": constructors, "cpp_code": cpp_code})
+    qm_text.text = cppfile_code
     qm_file = etree.SubElement(qm_directory, "file", name="%s.h" % name)
     qm_text = etree.SubElement(qm_file, "text")
     with open("templates\h_template") as t:
-        declares = ""
+        declareSM = ""
+        for Filename in Filenames:
+            declareSM += "$declare(SMs::%s)\n\n" % Filename
+        declarector = ""
         for filename in filenames:
             Filename = filename[0].upper() + filename[1:]
-            declares+="extern QHsm * const the_%s; /* opaque pointer to the %s HSM */\n\n$declare(SMs::%s_ctor)" % (filename, filename, Filename)
+            declarector+="$declare(SMs::%s_ctor)" % (Filename)
 
-        h_code = Template(t.read()).substitute({"declares": declares, "filename_h": name + "_h",
-                                                "event_struct": get_event_struct(event_fields, filename),
-                                                "player_signals": get_enum(player_signal)})
-    qm_text.text = h_code
+        hfile_code = Template(t.read()).substitute({"declarector": declarector, "declareSM": declareSM, "filename_h": name + "_h",
+                                                "event_struct": get_event_struct(event_fields, Filename),
+                                                "player_signals": "", "struct": "struct %s" % Filename, "h_code": h_code})
+    qm_text.text = hfile_code
 
 
 def prepare_qm():
@@ -605,4 +683,4 @@ def finish_qm(qm_model: etree._Element, qm_package, filenames: [str], player_sig
         create_qm_constructor(qm_package, Filename, filename)
     create_qm_files(qm_model, filenames, player_signal, event_fields)
     xml_tree = etree.ElementTree(qm_model)
-    xml_tree.write('%s.qm' % filename, xml_declaration=True, encoding="UTF-8")
+    xml_tree.write('%s.qm' % Filename, xml_declaration=True, encoding="UTF-8")

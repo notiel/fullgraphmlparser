@@ -11,7 +11,7 @@ def main(filenames):
 
     #filenames = ['ka-tet', 'prioritizer2', 'location', 'emotion', 'dogan_ligt', 'reason_handler', 'dogan1',
      #            'lightsaber']
-    #filenames = ["ka_tet_counter", "ka_tet", "character"]
+    #filenames = ["ka_tet_counter", "ka_tet", "character", "screen"]
 
     qm_model, qm_package = cr.prepare_qm()
     player_signal=[]

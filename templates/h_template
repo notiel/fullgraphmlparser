@@ -1,18 +1,20 @@
-    #ifndef $filename_h
-    #define $filename_h
-    #ifdef __cplusplus
-    extern "C" {
-    #endif
+#ifndef $filename_h
+#define $filename_h
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    #include "qpc.h"    /* include own framework */
+#include "qhsm.h"    /* include own framework */
+#include "localcharacter.h"
 
-    $event_struct
+$h_code
 
-    $player_signals
-
-    $declares
-
-    #ifdef __cplusplus
-    }
-    #endif
-    #endif /* $filename_h */
+class Dispatcher;
+$declareSM
+$event_struct
+$player_signals
+$declarector
+#ifdef __cplusplus
+}
+#endif
+#endif /* $filename_h */
