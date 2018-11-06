@@ -1,0 +1,18 @@
+#include "qpc.h"
+#include "bsp.h"                   // Change this file for different platforms
+#include "service.h"
+$include
+
+
+#include "stdio.h"
+#include "stdlib.h"
+#include "string.h"
+#include "stdint.h"
+
+//Q_DEFINE_THIS_FILE
+
+$declare
+
+/* global-scope definitions -----------------------------------------*/
+$consts
+$constructors

@@ -1,0 +1,18 @@
+    #ifndef $filename_h
+    #define $filename_h
+    #ifdef __cplusplus
+    extern "C" {
+    #endif
+
+    #include "qpc.h"    /* include own framework */
+
+    $event_struct
+
+    $player_signals
+
+    $declares
+
+    #ifdef __cplusplus
+    }
+    #endif
+    #endif /* $filename_h */
