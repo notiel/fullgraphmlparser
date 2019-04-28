@@ -4,17 +4,15 @@ import graphml as gr
 import create_qm as cr
 from logger import logging
 import sys
+from typing import Union, List
 
 
-def main(filenames):
-
-
-    #filenames = ['ka-tet', 'prioritizer2', 'location', 'emotion', 'dogan_ligt', 'reason_handler', 'dogan1',
-     #            'lightsaber']
-    #filenames = ["ka_tet_counter", "ka_tet", "character"]
+def main(filenames: Union[List[str], str]):
 
     qm_model, qm_package = cr.prepare_qm()
     player_signal=[]
+    if not isinstance(filenames, list):
+        filenames = [filenames]
 
     for filename in filenames:
 
