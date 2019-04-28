@@ -583,9 +583,11 @@ def create_qm(qm_package, filename, start_state, start_action, notes, states, co
     qm_class = etree.SubElement(qm_package, 'class', name=Filename, superclass="%s::QHsm" % framework)
     qm_class_doc = etree.SubElement(qm_class, "documentation")
     event_fields = {}
-    for note in notes:
-        text = get_note_label(note)
-        get_parameters_code(event_fields, text, qm_class, qm_class_doc)
+
+    #for note in notes:
+    #    text = get_note_label(note)
+    #    get_parameters_code(event_fields, text, qm_class, qm_class_doc)
+
     qm_statechart = etree.SubElement(qm_class, 'statechart')
     start_state = get_state_by_id(states, start_state, 'old')
     x = start_state.x

@@ -23,6 +23,8 @@ it contains functions for analyze and transform data in .graphml file
 -def get_edge_label_coordinates(edge: dict) -> tuple:                  gets coordinates for edge label
 """
 
+edgetype = 'y:PolyLineEdge'
+
 
 def flatten(mixed_data: list, key: str) -> list:
     """
@@ -143,8 +145,8 @@ def get_start_node_data(nodes: [dict], edges) -> tuple:
                 node_id = node['id']
     for edge in edges:
         if edge['source'] == node_id:
-            if is_edge_correct(edge, "y:GenericEdge") and "#text" in edge['y:GenericEdge']['y:EdgeLabel'].keys():
-                action = edge['y:GenericEdge']['y:EdgeLabel']["#text"]
+            if is_edge_correct(edge, edgetype) and "#text" in edge[edgetype]['y:EdgeLabel'].keys():
+                action = edge[edgetype]['y:EdgeLabel']["#text"]
             else:
                 action = ""
             return node_id, edge['target'], action
@@ -363,7 +365,7 @@ def get_edge_coordinates(edge: dict) -> tuple:
     :param edge: dict with edge data
     :return: (first_x, first_y, last_dx, last_dy, points)
     """
-    coordinates = edge['y:GenericEdge']['y:Path']
+    coordinates = edge[edgetype]['y:Path']
     x = int(float(coordinates['@sx']))
     y = int(float(coordinates['@sy']))
     last_dx = int(float(coordinates['@tx']))
@@ -381,8 +383,8 @@ def get_edge_label_coordinates(edge: dict) -> tuple:
     :param edge: dict with edge data
     :return: x, y, width of edge coordinates
     """
-    if is_edge_correct(edge, 'y:GenericEdge'):
-        label = edge['y:GenericEdge']['y:EdgeLabel']
+    if is_edge_correct(edge, edgetype):
+        label = edge[edgetype]['y:EdgeLabel']
         return int(float(label['@x'])), int(float(label['@y'])), int (float(label['@width']))
     else:
         return 0, 0, 0

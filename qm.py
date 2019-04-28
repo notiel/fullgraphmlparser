@@ -254,12 +254,12 @@ def update_states_with_edges(states: [State], flat_edges: [dict], start_state: S
     """
     for edge in flat_edges:
         old_source = edge['source']
-        if old_source != start_state:
+        if old_source != start_state and len(edge.keys()) > 3:
             old_target = edge['target']
             source_state = get_state_by_id(states, old_source, "old")
             target_state = get_state_by_id(states, old_target, "old")
-            if is_edge_correct(edge, "y:GenericEdge") and "#text" in edge['y:GenericEdge']['y:EdgeLabel'].keys():
-                action = edge['y:GenericEdge']['y:EdgeLabel']["#text"].split('/')
+            if is_edge_correct(edge, edgetype) and "#text" in edge[edgetype]['y:EdgeLabel'].keys():
+                action = edge[edgetype]['y:EdgeLabel']["#text"].split('/')
                 trigger_name = action[0].strip()
                 guard = ""
                 if '[' in trigger_name and ']' in trigger_name:
@@ -273,6 +273,7 @@ def update_states_with_edges(states: [State], flat_edges: [dict], start_state: S
             else:
                 trigger_name = ""
                 trigger_action = ""
+                guard=""
             x, y, dx, dy, points = get_edge_coordinates(edge)
             new_points = []
             for point in points:
