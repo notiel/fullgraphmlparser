@@ -45,11 +45,11 @@ def main(filenames: Union[List[str], str]):
         #get notes
         notes = [node for node in flat_nodes if gr.is_node_a_note(node)]
         #create qm data
-        event_fields, hcode, cppcode = cr.create_qm(qm_package, filename, start_node, start_action, notes, qm_states, coords,
-                                           player_signal)
+        event_fields, hcode, cppcode = cr.create_qm(qm_package, filename, start_node, start_action, notes, qm_states,
+                                                    coords, player_signal)
     #create file with final code
     try:
-        cr.finish_qm(qm_model, qm_package, filenames, player_signal, event_fields, hcode), cppcode
+        cr.finish_qm(qm_model, qm_package, filenames, player_signal, event_fields, hcode, cppcode)
     except PermissionError:
         logging.fatal("File already exists and is locked")
 

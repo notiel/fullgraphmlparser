@@ -511,9 +511,12 @@ def create_qm_constructor(qm_package: etree._Element, Filename: str, filename: s
     qm_code.text = "%s *me = &%s;\n QHsm_ctor(&me->super, Q_STATE_CAST(&%s_initial));" % (Filename, filename, Filename)
 
 
-def create_qm_files(qm_model: etree._Element, filenames:[str], player_signal: [str], event_fields:dict, hcode: str):
+def create_qm_files(qm_model: etree._Element, filenames:[str], player_signal: [str], event_fields:dict, hcode: str,
+                    cppcode: str):
     """
     creates qm code for files c and h
+    :param hcode: code for hfile
+    :param cppcode: code for cpp file
     :param filenames: list of filenames
     :param qm_model: qm element to add code below
     :param player_signal: list of all trigger names
@@ -540,7 +543,8 @@ def create_qm_files(qm_model: etree._Element, filenames:[str], player_signal: [s
         for Filename in Filenames:
             constructors+="$define(SMs::%s_ctor)\n$define(SMs::%s)\n\n" % (Filename, Filename)
         c_code = Template(t.read()).substitute(
-            {"include": include, "declare": declare, "consts": consts, "constructors": constructors})
+            {"include": include, "declare": declare, "consts": consts, "constructors": constructors,
+             "cppcode": cppcode})
     qm_text.text = c_code
     qm_file = etree.SubElement(qm_directory, "file", name="%s.h" % name)
     qm_text = etree.SubElement(qm_file, "text")
@@ -592,6 +596,8 @@ def create_qm(qm_package, filename, start_state, start_action, notes, states, co
                 update_event_fields(line, event_fields)
         if text.startswith("Code for h-file:"):
             hcode = '\n'.join([s for s in text.split('\n')[1:] if s])
+        if text.startswith("Code for cpp-file:"):
+            cppcode = '\n'.join([s for s in text.split('\n')[1:] if s])
 
     qm_statechart = etree.SubElement(qm_class, 'statechart')
     start_state = get_state_by_id(states, start_state, 'old')
@@ -606,9 +612,12 @@ def create_qm(qm_package, filename, start_state, start_action, notes, states, co
     return event_fields, hcode, cppcode
 
 
-def finish_qm(qm_model: etree._Element, qm_package, filenames: [str], player_signal, event_fields: dict, hcode):
+def finish_qm(qm_model: etree._Element, qm_package, filenames: [str], player_signal, event_fields: dict,
+              hcode: str, cppcode: str):
     """
-
+    creates final part of qm file
+    :param cppcode:
+    :param hcode:
     :param qm_model:
     :param qm_package:
     :param filenames:
@@ -620,6 +629,6 @@ def finish_qm(qm_model: etree._Element, qm_package, filenames: [str], player_sig
         filename = filename[0].lower() + filename[1:]
         Filename = filename[0].upper() + filename[1:]
         create_qm_constructor(qm_package, Filename, filename)
-    create_qm_files(qm_model, filenames, player_signal, event_fields, hcode)
+    create_qm_files(qm_model, filenames, player_signal, event_fields, hcode, cppcode)
     xml_tree = etree.ElementTree(qm_model)
     xml_tree.write('%s.qm' % filename, xml_declaration=True, encoding="UTF-8")

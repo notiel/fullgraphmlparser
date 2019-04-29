@@ -16,3 +16,5 @@ $declare
 /* global-scope definitions -----------------------------------------*/
 $consts
 $constructors
+/*tranlated from diagrams code*/
+$cppcode
