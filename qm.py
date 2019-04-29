@@ -333,9 +333,10 @@ def update_state_ids(states: [State]):
             if states[i].new_id[0] == '2':
                 states[i].new_id.append("2")
             else:
-                brothers = len(states[i].parent.childs)
-                trigs =  len(states[i].parent.trigs)
-                states[i].new_id.append(states[i].parent.new_id[1] + "/" + str(brothers+trigs))
+                len_brothers: int = len(states[i].parent.childs)
+                trigs = states[i].parent.trigs
+                len_trigs = len(set([trig.name for trig in trigs]))
+                states[i].new_id.append(states[i].parent.new_id[1] + "/" + str(len_brothers+len_trigs))
                 if states[i].type != 'choice':
                     states[i].parent.childs.append(states[i])
 
