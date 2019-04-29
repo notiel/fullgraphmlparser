@@ -215,7 +215,7 @@ def create_global_state(w: int, h: int)->State:
 
 
 
-def create_states_from_nodes(nodes: [dict], coords: list, player_signal) -> [State]:
+def create_states_from_nodes(nodes: [dict], coords: tuple, player_signal) -> [State]:
     """
     function gets node data from node dict and returns State object with all necessary data
     :param coords: min x coordinate to calibrate others, min y coordinate to calibrate others,
