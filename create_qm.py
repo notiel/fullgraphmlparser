@@ -470,7 +470,7 @@ def get_choice_trigger_code(trig: Trigger, states: [State], qm_state: etree._Ele
     for choice_trig in state_choice.trigs:
         qm_choice = etree.SubElement(qm_trig, "choice", target="../%s" % get_path(trig.source, choice_trig.target, states))
         qm_guard = etree.SubElement(qm_choice, "guard")
-        guard = choice_trig.name.replace("[", "")
+        guard = choice_trig.guard.replace("[", "")
         guard = guard.replace("]", "")
         qm_guard.text = guard
         qm_action = etree.SubElement(qm_choice, "action")
