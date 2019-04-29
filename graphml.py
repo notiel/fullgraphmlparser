@@ -144,7 +144,7 @@ def get_start_node_data(nodes: [dict], edges) -> tuple:
             if node['y:GenericNode']['@configuration'] == 'com.yworks.bpmn.Event.withShadow':
                 node_id = node['id']
     for edge in edges:
-        if edge['source'] == node_id:
+        if edge['source'] == node_id and len(edge.keys()) > 3:
             if is_edge_correct(edge, edgetype) and "#text" in edge[edgetype]['y:EdgeLabel'].keys():
                 action = edge[edgetype]['y:EdgeLabel']["#text"]
             else:

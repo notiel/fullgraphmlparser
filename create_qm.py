@@ -21,6 +21,7 @@ This module creates qm structure
 from lxml import etree
 from string import Template
 from qm import *
+from typing import List, Tuple
 
 documentation = 'test qm file made by Ostranna and ksotar'  # documentation string
 framework = "qpc"  # framework, use qpc for c and qpcpp for cpp
@@ -36,45 +37,45 @@ trig_action_coordinates = "0,-2,25,4"  # relative coordinates for trigger label
 type_list = ['uint8_t', 'uint16_t', "uint32_t", "int8_t", "int16_t", "int32_t", "uint_fast8_t", "uint_fast16_t"
                                                                                                 "uint_t", "int_t",
              "enum_t", "QSignal", "QEvt const *", "QTimeEvt", "QHsm", "QMsm", "QActive",
-             "QMActive", "QEQueue", "QMPool", "QPSet", 'void', "void*"]  # list of types from qpc framework
+             "QMActive", "QEQueue", "QMPool", "QPSet", 'void', "void*", "unsigned", "QStateHandler*", "QState*"]  # list of types from qpc framework
 vis_dict = {"public": "0x00", "private": "0x02", "protected": "0x01"}  # codes for visibility of variables
 
 
-def get_parameters_data(parameter: str) -> tuple:
+def get_parameters_data(parameter: str) -> Tuple[str, str, str, str]:
     """
     get data for variables from parameters string
     :param parameter: string with data for parameter
     :return: (type, name, visibility, comment) (if possible)
     """
-    data = parameter.split()
+    data: List[str] = parameter.split()
     if len(data) < 2:
         return "", "", "", ""
     if data[0] in type_list:
-        param_type = data[0]
+        if data[0] == "unsigned":
+            if data[1] == 'int':
+                param_type = 'unsigned int'
+                i = 2
+            else:
+                return "", "", "", ""
+        else:
+            param_type = data[0]
+            i = 1
     else:
         return "", "", "", ""
-    param_name = data[1]
+    param_name = data[i].replace(";", "")
     param_name.replace(";", "")
     param_name.replace("/", "")
     param_vis = "0x00"
     param_comment = ""
-    if len(data) > 2:
-        param_vis = vis_dict[data[2]] if data[2] in vis_dict.keys() else ""
+    if len(data) > i+1:
+        param_vis = vis_dict[data[i+1]] if data[i+1] in vis_dict.keys() else ""
         if param_vis:
-            data = data[2:]
+            data = data[(i+1):]
         else:
-            data = data[3:]
+            data = data[(i+1):]
         param_comment = " ".join(data)
     return param_name, param_type, param_vis, param_comment
 
-
-def is_parameter_event_field(parameter:str) -> bool:
-    """
-    checks if parameter is an event field (starts with #)
-    :param parameter: parameter
-    :return: true or false
-    """
-    return parameter and parameter[0] == "#"
 
 def update_event_fields(parameter: str, event_fields: dict):
     """
@@ -83,13 +84,10 @@ def update_event_fields(parameter: str, event_fields: dict):
     :param event_fields:
     :return:
     """
-    parameter = parameter[1:]
     data = parameter.split()
-    if len(data) != 2:
-        return event_fields
-    if data[0] not in type_list:
-        return event_fields
-    event_fields[data[0]] = data[1]
+    param_name = data[-1].replace(";", "")
+    param_type = ' '.join(data[:-1])
+    event_fields[param_name] = param_type
     return event_fields
 
 
@@ -101,11 +99,12 @@ def get_event_struct (event_fields: dict, filename: str) -> str:
     """
     event_struct = "\ntypedef struct %s {\n    QEvt super;" %(filename+'QEvt')
     for key in event_fields.keys():
-        event_struct+="\n    %s %s;" % (key, event_fields[key])
+        event_struct += "\n    %s %s;" % (event_fields[key], key)
     event_struct+="\n} %s;\n" % (filename+'QEvt')
     return event_struct
 
-def get_parameters_code(event_fields: dict, parameter_text: str, qm_class: etree._Element, qm_documentation: etree._Element):
+
+def get_parameters_code(parameter_text: str, qm_class: etree._Element, qm_documentation: etree._Element):
     """
     add parameters data to qm structure
     :param parameter_text: text with parameters data
@@ -116,13 +115,12 @@ def get_parameters_code(event_fields: dict, parameter_text: str, qm_class: etree
     parameters = parameter_text.split("\n")
     for parameter in parameters:
         parameter = parameter.strip()
-        if is_parameter_event_field(parameter):
-            update_event_fields(parameter, event_fields)
         param_name, param_type, param_vis, param_comment = get_parameters_data(parameter)
         if param_name:
             qm_attribute = etree.SubElement(qm_class, "attribute", name=param_name, type=param_type,
                                             visibility=param_vis, properties="0x00")
-            qm_documentation = etree.SubElement(qm_attribute, "documentation")
+            if param_comment:
+                qm_documentation = etree.SubElement(qm_attribute, "documentation")
             qm_documentation.text = param_comment
         else:
             wrong_data += ("\n" + parameter)
@@ -584,9 +582,14 @@ def create_qm(qm_package, filename, start_state, start_action, notes, states, co
     qm_class_doc = etree.SubElement(qm_class, "documentation")
     event_fields = {}
 
-    #for note in notes:
-    #    text = get_note_label(note)
-    #    get_parameters_code(event_fields, text, qm_class, qm_class_doc)
+    for note in notes:
+        text = get_note_label(note)
+        if text.startswith("State fields"):
+            text = '\n'.join(text.split('\n')[1:])
+            get_parameters_code(text, qm_class, qm_class_doc)
+        if text.startswith("Event fields"):
+            for line in text.split('\n')[1:]:
+                update_event_fields(line, event_fields)
 
     qm_statechart = etree.SubElement(qm_class, 'statechart')
     start_state = get_state_by_id(states, start_state, 'old')
@@ -600,7 +603,17 @@ def create_qm(qm_package, filename, start_state, start_action, notes, states, co
                                                                (coords[3] - coords[1]) // divider + 40))
     return event_fields
 
+
 def finish_qm(qm_model: etree._Element, qm_package, filenames: [str], player_signal, event_fields):
+    """
+
+    :param qm_model:
+    :param qm_package:
+    :param filenames:
+    :param player_signal:
+    :param event_fields:
+    :return:
+    """
     for filename in filenames:
         filename = filename[0].lower() + filename[1:]
         Filename = filename[0].upper() + filename[1:]
