@@ -358,8 +358,7 @@ void PillIndicate() {
           <y:Geometry height="314.6822920456651" width="330.1463207517571" x="-371.1930738971512" y="132.83642602316382"/>
           <y:Fill color="#FFCC00" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Consolas" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="304.0" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="br" textColor="#000000" verticalTextPosition="bottom" visible="true" width="320.6875" x="5.458820751757116" xml:space="preserve" y="6.682292045665122">Constructor code:
-(do not delete this caption):
+          <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Consolas" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="292.0" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="br" textColor="#000000" verticalTextPosition="bottom" visible="true" width="320.6875" x="5.458820751757116" xml:space="preserve" y="18.682292045665122">Constructor code: (do not delete this caption):
     me-&gt;CharHP = HP;
     me-&gt;MaxHP = MaxHP;
     switch (State) {
@@ -384,6 +383,20 @@ void PillIndicate() {
             (QStateHandler)&amp;HeartOfStorm_idle;
     }  
 </y:NodeLabel>
+        </y:UMLNoteNode>
+      </data>
+    </node>
+    <node id="n8">
+      <data key="d4" xml:space="preserve"/>
+      <data key="d6">
+        <y:UMLNoteNode>
+          <y:Geometry height="100.0" width="390.05953020198126" x="646.9404697980187" y="654.7529296875001"/>
+          <y:Fill color="#FFCC00" transparent="false"/>
+          <y:BorderStyle color="#000000" type="line" width="1.0"/>
+          <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Consolas" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="52.0" horizontalTextPosition="center" iconTextGap="4" modelName="internal" modelPosition="tl" textColor="#000000" verticalTextPosition="bottom" visible="true" width="320.6875" x="4.0" xml:space="preserve" y="4.0">Constructor fields (do not delete this caption):
+unsigned int HP;
+unsigned int MAxHP;
+unsigned int State;</y:NodeLabel>
         </y:UMLNoteNode>
       </data>
     </node>

@@ -178,6 +178,7 @@ def get_action_coordinates(trig: Trigger) -> str:
 def get_guard_coordinates(trig: Trigger, move: int) -> str:
     """
     dunctions gets coordinates for trigger label (relative to trigger start point)
+    :param move: some shift
     :param trig: trigger with label
     :return: string with action box coordinates (trigger label)
     """
@@ -304,7 +305,7 @@ def get_trig_code(qm_state: etree._Element, states: [State], trig: Trigger):
     if trig.type == "internal" and trig.guard != 'else':
         get_internal_trigger_code(trig, states, qm_state)
     if trig.type == "external":
-        if (trig.guard == '' or trig.guard == 'else'):
+        if not trig.guard or trig.guard == 'else':
             get_external_trigger_code(trig, states, qm_state)
         else:
             get_guard_trigger_code(trig, states, qm_state)
@@ -331,7 +332,7 @@ def get_internal_trigger_code(trig: Trigger, states: [State], qm_state: etree._E
     x = source_state.x
     delta = 2 if source_state.entry else 0
     if source_state.exit:
-        delta +=2
+        delta += 2
     y = source_state.y + 4 * trig.id + delta
     qm_trig = etree.SubElement(qm_state, 'tran', trig=trig.name)
     qm_action = etree.SubElement(qm_trig, 'action')
@@ -424,6 +425,7 @@ def get_else_trig(trig: Trigger, states: [State]) -> Trigger:
             return child_trig
     return None
 
+
 def get_else_coordinates(coord_str: str) -> str:
     """
     :param coord_str: string with trigger coordinates
@@ -431,6 +433,7 @@ def get_else_coordinates(coord_str: str) -> str:
     """
     coords = coord_str.split(',')
     return "%s,%s,4,-1,-10" % (coords[0], coords[1])
+
 
 def get_choice_trigger_code(trig: Trigger, states: [State], qm_state: etree._Element):
     """
@@ -497,9 +500,24 @@ def get_enum(text_labels: list) -> str:
     return enum
 
 
-def create_qm_constructor(qm_package: etree._Element, Filename: str, filename: str):
+def update_ctor_fields(parameter: str, ctor_fields: dict):
+    """
+    function updates dictionary type:name of custom fields of constructor structure (empty by default)
+    :param ctor_fields: dict for constructor parameters
+    :param parameter: string with parameter
+    :return:
+    """
+    parameter = parameter.replace(";", "")
+    data = parameter.split()
+    ctor_fields[data[-1]] = " ".join(data[:-1])
+    return ctor_fields
+
+
+def create_qm_constructor(qm_package: etree._Element, Filename: str, filename: str, ctor_code: str, ctor_fields: dict):
     """
     creates qm code for constructor
+    :param ctor_code: extra constructor code
+    :param ctor_fields: dict with extra constructor fields
     :param qm_package: qm tag to add code below
     :param filename: filename of project
     :param Filename: filename with uppercase first letter
@@ -507,8 +525,10 @@ def create_qm_constructor(qm_package: etree._Element, Filename: str, filename: s
     """
     qm_ctor = etree.SubElement(qm_package, "operation", name="%s_ctor" % Filename, type="void", visibility="0x00",
                                properties="0x00")
+    for key in ctor_fields.keys():
+        _ = etree.SubElement(qm_ctor, "parameter", name=key, type=ctor_fields[key])
     qm_code = etree.SubElement(qm_ctor, "code")
-    qm_code.text = "%s *me = &%s;\n QHsm_ctor(&me->super, Q_STATE_CAST(&%s_initial));" % (Filename, filename, Filename)
+    qm_code.text = ctor_code + "%s *me = &%s;\n QHsm_ctor(&me->super, Q_STATE_CAST(&%s_initial));" % (Filename, filename, Filename)
 
 
 def create_qm_files(qm_model: etree._Element, filenames:[str], player_signal: [str], event_fields:dict, hcode: str,
@@ -584,8 +604,10 @@ def create_qm(qm_package, filename, start_state, start_action, notes, states, co
     qm_class = etree.SubElement(qm_package, 'class', name=Filename, superclass="%s::QHsm" % framework)
     qm_class_doc = etree.SubElement(qm_class, "documentation")
     event_fields = dict()
+    ctor_fields = dict()
     hcode = ""
     cppcode = ""
+    ctor_code = ""
     for note in notes:
         text = get_note_label(note)
         if text.startswith("State fields"):
@@ -598,7 +620,11 @@ def create_qm(qm_package, filename, start_state, start_action, notes, states, co
             hcode = '\n'.join([s for s in text.split('\n')[1:] if s])
         if text.startswith("Code for cpp-file:"):
             cppcode = '\n'.join([s for s in text.split('\n')[1:] if s])
-
+        if text.startswith("Constructor code"):
+            ctor_code = '\n'.join(text.split('\n')[1:])
+        if text.startswith("Constructor fields"):
+            for line in text.split('\n')[1:]:
+                ctor_fields = update_ctor_fields(line, ctor_fields)
     qm_statechart = etree.SubElement(qm_class, 'statechart')
     start_state = get_state_by_id(states, start_state, 'old')
     x = start_state.x
@@ -609,13 +635,15 @@ def create_qm(qm_package, filename, start_state, start_action, notes, states, co
     _ = etree.SubElement(qm_statechart, 'state_diagram', size="%i,%i" %
                                                               ((coords[2] - coords[0]) // divider + 30,
                                                                (coords[3] - coords[1]) // divider + 40))
-    return event_fields, hcode, cppcode
+    return event_fields, hcode, cppcode, ctor_code, ctor_fields
 
 
 def finish_qm(qm_model: etree._Element, qm_package, filenames: [str], player_signal, event_fields: dict,
-              hcode: str, cppcode: str):
+              hcode: str, cppcode: str, ctor_code: str, ctor_fields: dict):
     """
     creates final part of qm file
+    :param ctor_fields:
+    :param ctor_code:
     :param cppcode:
     :param hcode:
     :param qm_model:
@@ -628,7 +656,7 @@ def finish_qm(qm_model: etree._Element, qm_package, filenames: [str], player_sig
     for filename in filenames:
         filename = filename[0].lower() + filename[1:]
         Filename = filename[0].upper() + filename[1:]
-        create_qm_constructor(qm_package, Filename, filename)
+        create_qm_constructor(qm_package, Filename, filename, ctor_code, ctor_fields)
     create_qm_files(qm_model, filenames, player_signal, event_fields, hcode, cppcode)
     xml_tree = etree.ElementTree(qm_model)
     xml_tree.write('%s.qm' % filename, xml_declaration=True, encoding="UTF-8")
