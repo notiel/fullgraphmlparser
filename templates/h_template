@@ -3,7 +3,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "qpc.h"    /* include own framework */
+#include "qhsm.h"    /* include own framework tagunil version */
+#include "eventHandlers.h"
 $hcode
 $event_struct
 $player_signals

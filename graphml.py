@@ -23,7 +23,7 @@ it contains functions for analyze and transform data in .graphml file
 -def get_edge_label_coordinates(edge: dict) -> tuple:                  gets coordinates for edge label
 """
 from typing import List, Dict, Any, Union, Tuple
-edgetype = 'y:PolyLineEdge'
+edge_types = ['y:PolyLineEdge', 'y:GenericEdge']
 
 
 def flatten(mixed_data: list, key: str) -> List:
@@ -147,12 +147,16 @@ def get_start_node_data(nodes: List[Dict[str, Any]], edges) -> Tuple[int, int, s
             if node['y:GenericNode']['@configuration'] == 'com.yworks.bpmn.Event.withShadow':
                 node_id = node['id']
     for edge in edges:
-        if edge['source'] == node_id and len(edge.keys()) > 3:
-            if is_edge_correct(edge, edgetype) and "#text" in edge[edgetype]['y:EdgeLabel'].keys():
-                action: str = edge[edgetype]['y:EdgeLabel']["#text"]
-            else:
-                action = ""
-            return node_id, edge['target'], action
+        for edge_type in edge_types:
+            try:
+                if edge['source'] == node_id and len(edge.keys()) > 3:
+                    if is_edge_correct(edge, edge_type) and "#text" in edge[edge_type]['y:EdgeLabel'].keys():
+                        action: str = edge[edge_type]['y:EdgeLabel']["#text"]
+                    else:
+                       action = ""
+                    return node_id, edge['target'], action
+            except KeyError:
+                continue
     raise ValueError                   # raise exception of no start node found
 
 
@@ -356,7 +360,7 @@ def is_edge_correct(edge: Dict[str, Any], edge_type: str) -> bool:
     :param edge_type: type of edge:generic or curve
     :return: true if edge is generic false otherwise
     """
-    if edge_type not in edge.keys():
+    if len([edge_type for edge_type in edge_types if edge_type in edge.keys()]) == 0:
         return False
     if 'y:EdgeLabel' not in edge[edge_type].keys():
         return False
@@ -370,7 +374,11 @@ def get_edge_coordinates(edge: Dict[str, Any]) -> Tuple[int, int, int, int, List
     :param edge: dict with edge data
     :return: (first_x, first_y, last_dx, last_dy, points)
     """
-    coordinates = edge[edgetype]['y:Path']
+    for edgetype in edge_types:
+        try:
+            coordinates = edge[edgetype]['y:Path']
+        except KeyError:
+            continue
     x: int = int(float(coordinates['@sx']))
     y: int = int(float(coordinates['@sy']))
     last_dx: int = int(float(coordinates['@tx']))
@@ -388,8 +396,12 @@ def get_edge_label_coordinates(edge: Dict[str, Any]) -> Tuple[int, int, int]:
     :param edge: dict with edge data
     :return: x, y, width of edge coordinates
     """
-    if is_edge_correct(edge, edgetype):
-        label = edge[edgetype]['y:EdgeLabel']
-        return int(float(label['@x'])), int(float(label['@y'])), int(float(label['@width']))
-    else:
-        return 0, 0, 0
+    for edge_type in edge_types:
+        try:
+            if is_edge_correct(edge, edge_type):
+                label = edge[edge_type]['y:EdgeLabel']
+                return int(float(label['@x'])), int(float(label['@y'])), int(float(label['@width']))
+            else:
+                return 0, 0, 0
+        except KeyError:
+            continue

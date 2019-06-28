@@ -84,11 +84,12 @@ def update_event_fields(parameter: str, event_fields: dict):
     :param event_fields:
     :return:
     """
-    data = parameter.split()
-    param_name = data[-1].replace(";", "")
-    param_type = ' '.join(data[:-1])
-    event_fields[param_name] = param_type
-    return event_fields
+    if parameter:
+        data = parameter.split()
+        param_name = data[-1].replace(";", "")
+        param_type = ' '.join(data[:-1])
+        event_fields[param_name] = param_type
+        return event_fields
 
 
 def get_event_struct (event_fields: dict, filename: str) -> str:
@@ -528,7 +529,8 @@ def create_qm_constructor(qm_package: etree._Element, Filename: str, filename: s
     for key in ctor_fields.keys():
         _ = etree.SubElement(qm_ctor, "parameter", name=key, type=ctor_fields[key])
     qm_code = etree.SubElement(qm_ctor, "code")
-    qm_code.text = ctor_code + "%s *me = &%s;\n QHsm_ctor(&me->super, Q_STATE_CAST(&%s_initial));" % (Filename, filename, Filename)
+    qm_code.text = "%s *me = &%s;\n %s\n QHsm_ctor(&me->super, Q_STATE_CAST(&%s_initial));" % (Filename, filename,
+                                                                                               ctor_code, Filename)
 
 
 def create_qm_files(qm_model: etree._Element, filenames:[str], player_signal: [str], event_fields:dict, hcode: str,

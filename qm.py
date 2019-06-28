@@ -253,44 +253,48 @@ def update_states_with_edges(states: [State], flat_edges: [dict], start_state: S
     :return:
     """
     for edge in flat_edges:
-        old_source = edge['source']
-        if old_source != start_state and len(edge.keys()) > 3:
-            old_target = edge['target']
-            source_state = get_state_by_id(states, old_source, "old")
-            target_state = get_state_by_id(states, old_target, "old")
-            if is_edge_correct(edge, edgetype) and "#text" in edge[edgetype]['y:EdgeLabel'].keys():
-                action = edge[edgetype]['y:EdgeLabel']["#text"].split('/')
-                trigger_name = action[0].strip()
-                guard = ""
-                if '[' in trigger_name and ']' in trigger_name:
-                    guard_regexp = r"\[.*\]"
-                    res = re.search(guard_regexp, trigger_name)
-                    guard = res.group(0)[1:-1]
-                    trigger_name = re.split(guard_regexp, trigger_name)[0].strip()
-                    if guard == 'else':
-                        logging.warning("External trigger %s[%s] can't contain 'else'" % (trigger_name, guard))
-                trigger_action = action[1].strip() if len(action) > 1 else ""
-            else:
-                trigger_name = ""
-                trigger_action = ""
-                guard=""
-            x, y, dx, dy, points = get_edge_coordinates(edge)
-            new_points = []
-            for point in points:
-                new_points.append(((point[0] - min_x)// divider, (point[1] - min_y)// divider))
-            action_x, action_y, action_width = get_edge_label_coordinates(edge)
-            trig_type = "external"
-            if source_state.type == "choice":
-                trig_type = "choice_result"
-            if target_state.type == "choice":
-                trig_type = "choice_start"
-            trigger = Trigger(name=trigger_name, type=trig_type, guard=guard, source=old_source, target=old_target, action=trigger_action,
-                              id=0,
-                              x=(x) // divider, y=(y)// divider, dx=dx // divider, dy=dy // divider, points=new_points, action_x=action_x // divider, action_y=action_y // divider,
-                              action_width=action_width // divider+2)
-            source_state.trigs.append(trigger)
-            if trigger_name and trigger_name not in player_signal:
-                player_signal.append(trigger_name)
+        for edge_type in edge_types:
+            try:
+                old_source = edge['source']
+                if old_source != start_state and len(edge.keys()) > 3:
+                    old_target = edge['target']
+                    source_state = get_state_by_id(states, old_source, "old")
+                    target_state = get_state_by_id(states, old_target, "old")
+                    if is_edge_correct(edge, edge_type) and "#text" in edge[edge_type]['y:EdgeLabel'].keys():
+                        action = edge[edge_type]['y:EdgeLabel']["#text"].split('/')
+                        trigger_name = action[0].strip()
+                        guard = ""
+                        if '[' in trigger_name and ']' in trigger_name:
+                            guard_regexp = r"\[.*\]"
+                            res = re.search(guard_regexp, trigger_name)
+                            guard = res.group(0)[1:-1]
+                            trigger_name = re.split(guard_regexp, trigger_name)[0].strip()
+                            if guard == 'else':
+                                logging.warning("External trigger %s[%s] can't contain 'else'" % (trigger_name, guard))
+                        trigger_action = action[1].strip() if len(action) > 1 else ""
+                    else:
+                        trigger_name = ""
+                        trigger_action = ""
+                        guard=""
+                    x, y, dx, dy, points = get_edge_coordinates(edge)
+                    new_points = []
+                    for point in points:
+                        new_points.append(((point[0] - min_x)// divider, (point[1] - min_y)// divider))
+                    action_x, action_y, action_width = get_edge_label_coordinates(edge)
+                    trig_type = "external"
+                    if source_state.type == "choice":
+                        trig_type = "choice_result"
+                    if target_state.type == "choice":
+                        trig_type = "choice_start"
+                    trigger = Trigger(name=trigger_name, type=trig_type, guard=guard, source=old_source, target=old_target, action=trigger_action,
+                                      id=0,
+                                      x=(x) // divider, y=(y)// divider, dx=dx // divider, dy=dy // divider, points=new_points, action_x=action_x // divider, action_y=action_y // divider,
+                                      action_width=action_width // divider+2)
+                    source_state.trigs.append(trigger)
+                    if trigger_name and trigger_name not in player_signal:
+                        player_signal.append(trigger_name)
+            except KeyError:
+                continue
     update_state_ids(states)
     return player_signal
 
