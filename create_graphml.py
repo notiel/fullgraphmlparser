@@ -12,7 +12,7 @@ scheme = "http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema
 scheme_loc = "http://www.w3.org/2001/XMLSchema-instance"
 
 
-prepare_dict = {'d0': {'attr.name':"Description", 'attr.type':"string", 'for':'port'},
+prepare_dict = {'d0': {'attr.name':"Description", 'attr.type':"string", 'for':'graph'},
                 'd1': {'for': 'port', 'yfiles.type' : 'portgraphics'},
                 'd2': {'for': 'port', 'yfiles.type' : 'portgeometry'},
                 'd3': {'for': 'port', 'yfiles.type': 'portuserdata'},
@@ -25,8 +25,66 @@ prepare_dict = {'d0': {'attr.name':"Description", 'attr.type':"string", 'for':'p
                 'd10': {'for': 'edge', 'yfiles.type': 'edgegraphics'},
                 }
 
-graph_dict = {'edgedefault':'directed', 'id': 'G'}
+graph_dict = {'edgedefault':'directed',
+              'id': 'G'}
 
+simple_node_color_dict = {'color': '#E8EEF7',
+                          'color2' :' #B7C9E3',
+                          'transparent' : "false"}
+
+configuration = 'com.yworks.entityRelationship.big_entity'
+
+node_border_dict = {'color' : "#000000",
+                    'type':"line",
+                    'width' : "1.0"}
+
+node_label_dict = {'alignment': 'center',
+             'autoSizePolicy': "node_width",
+             'backgroundColor': "#B7C9E3",
+             'configuration': 'com.yworks.entityRelationship.label.name',
+             'fontFamily': 'Consolas',
+             'fontSize': '12',
+             'fontStyle': 'bold',
+             'hasLineColor': 'false',
+             'height': '18.7',
+             'horizontalTextPosition':'center',
+             'iconTextGap': '4',
+             'modelName': 'internal',
+             'modelPosition':'t',
+             'textColor': "#000000",
+             "verticalTextPosition": 'bottom',
+             'visible': 'true',
+             'width':'200',
+             'x': '0.0',
+             'y': '4.0'}
+
+node_content_dict = {'alignment': 'left',
+             'autoSizePolicy': 'content',
+             'BackgroundColor': "false",
+             'configuration': 'com.yworks.entityRelationship.label.attributes',
+             'fontFamily': 'Consolas',
+             'fontSize': '12',
+             'fontStyle': 'plane',
+             'hasLineColor': 'false',
+             'height': '40',
+             'horizontalTextPosition':'center',
+             'iconTextGap': '4',
+             'modelName': 'internal',
+             'modelPosition':'tl',
+             'textColor': "#000000",
+             "verticalTextPosition": 'bottom',
+             'visible': 'true',
+             'width':'43.5',
+             'x': '0.0',
+             'y': '4.0'}
+
+style1_dict = {'class':"java.lang.Boolean",
+               "name":"y.view.ShadowNodePainter.SHADOW_PAINTING",
+               "value":"true"}
+
+style2_dict = {'class':"java.lang.Boolean",
+               "name":"doubleBorder",
+               "value":"false"}
 
 def prepare_graphml() -> etree._Element:
     """
@@ -41,19 +99,64 @@ def prepare_graphml() -> etree._Element:
         _ = etree.SubElement(graphml_root, 'key', id=key, **prepare_dict[key])
     return graphml_root
 
-def create_graph(root: etree._Element) -> etree._Element:
+def create_graph(tree_root: etree._Element) -> etree._Element:
     """
     adds graph tag to root
     :param root:
     :return:
     """
-    graph = etree.SubElement(root, 'graph', **graph_dict)
+    graph = etree.SubElement(tree_root, 'graph', **graph_dict)
     _ = etree.SubElement(graph, 'data', key='d0')
     return graph
 
-def add_simple_node()
+def add_simple_node(parent: etree._Element, node_text: str, content: str, id: int, h: int, w: int, x0: float, y0: float):
+    """
+    creates simple node
+    :param parent:
+    :return:
+    """
+    node = etree.SubElement(parent, "node", id="n%i" % id)
 
-root = prepare_graphml()
-create_graph(root)
-xml_tree = etree.ElementTree(root)
+    data = etree.SubElement(node, "data", key="d4")
+    data.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
+
+    data_full = etree.SubElement(node, "data", key="d6")
+    nmspc_y = namespace_dict['y']
+
+    generic_node = etree.SubElement(data_full, etree.QName(nmspc_y, "GenericNode"), configuration=configuration)
+    _ = etree.SubElement(generic_node,  etree.QName(nmspc_y, "Geometry"),
+                                height=str(h), width=str(w), x=str(x0), y=str(y0))
+    _ = etree.SubElement(generic_node, etree.QName(nmspc_y, 'Fill'), **simple_node_color_dict)
+    _ = etree.SubElement(generic_node, etree.QName(nmspc_y, 'BorderStyle'), **node_border_dict)
+
+    nodelabel = etree.SubElement(generic_node, etree.QName(nmspc_y, 'NodeLabel'), **node_label_dict)
+    nodelabel.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
+    nodelabel.text = node_text
+
+    nodecontent = etree.SubElement(generic_node, etree.QName(nmspc_y, 'NodeLabel'), **node_content_dict)
+    nodecontent.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
+    nodecontent.text = content
+
+    nodestyle = etree.SubElement(generic_node, etree.QName(nmspc_y, 'StyleProperties'))
+    _ = etree.SubElement(nodestyle, etree.QName(nmspc_y, 'Property'), **style1_dict)
+    _ = etree.SubElement(nodestyle, etree.QName(nmspc_y, 'Property'), **style2_dict)
+
+
+def finish_graphml(root_node: etree._Element):
+    """
+
+    :param root_node:
+    :return:
+    """
+    data = etree.SubElement(root_node, 'data', key='d7')
+    _ = etree.SubElement(data, etree.QName(namespace_dict['y'], 'Resources'))
+
+root_node = prepare_graphml()
+graph = create_graph(root_node)
+add_simple_node(graph, 'idle', '\n\nlorem ipsum', 0, 100, 200, 259, 255)
+add_simple_node(graph, 'not_idle', '\n\nlorem ipsum', 1, 200, 200, 500, 200)
+add_simple_node(graph, 'one_more', '\n\nlorem ipsum', 2, 250, 250, 250, 500)
+add_simple_node(graph, 'new', '\n\nlorem ipsum', 3, 150, 230, 500, 500)
+finish_graphml(root_node)
+xml_tree = etree.ElementTree(root_node)
 xml_tree.write("test.graphml", xml_declaration=True, encoding="UTF-8")
