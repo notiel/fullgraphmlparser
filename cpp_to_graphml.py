@@ -10,7 +10,7 @@ from lxml import etree
 #   Можно установить через 'pip install clang'.
 #
 # Запуск:
-#   py -3 cpp_to_plantuml.py <путь к cpp-файлу диаграммы>
+#   py -3 cpp_to_graphml.py <путь к cpp-файлу диаграммы>
 
 
 class StateMachineParser:
@@ -70,7 +70,8 @@ class StateMachineParser:
 
     def _OutputState(self, state):
 
-        state_content = ['', '']
+        # state_content = ['', '']
+        state_content = list()
         for name in state.handlers:
             h = state.handlers[name]
             if h.state_name != h.target_state_name:
@@ -88,7 +89,7 @@ class StateMachineParser:
 
         self.node_ids[state.state_name] = self.node_id
         create_graphml.add_simple_node(self.graph, state.state_name, '\n'.join(
-            state_content), self.node_id, 100, 200, 259, 255)
+            state_content), "n%i" % self.node_id, 100, 200, 259, 255)
         self.node_id += 1
 
     def _TraverseAST(self, node):
