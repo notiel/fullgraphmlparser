@@ -69,8 +69,8 @@ node_content_dict = {'alignment': 'left',
              'height': '40',
              'horizontalTextPosition':'center',
              'iconTextGap': '4',
-             'modelName': 'internal',
-             'modelPosition':'tl',
+             'modelName': 'custom',
+             #'modelPosition':'tl',
              'textColor': "#000000",
              "verticalTextPosition": 'bottom',
              'visible': 'true',
@@ -183,7 +183,7 @@ def add_simple_node(parent: etree._Element, node_text: str, content: str, node_i
 
     nodecontent = etree.SubElement(generic_node, etree.QName(nmspc_y, 'NodeLabel'), **node_content_dict)
     nodecontent.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
-    nodecontent.text = "\n\n"+content
+    nodecontent.text = content
 
     label_model = etree.SubElement(nodecontent, etree.QName(nmspc_y, "LabelModel"))
     _ = etree.SubElement(label_model, etree.QName(nmspc_y, "ErdAttributesNodeLabelModel"))
@@ -240,7 +240,7 @@ if __name__ == '__main__':
     root_node = prepare_graphml()
     graph = create_graph(root_node)
     add_simple_node(graph, 'idle', 'lorem ipsum', 'n0', 100, 200, 259, 255)
-    add_simple_node(graph, 'not_idle', '\n\nlorem ipsum', 'n1', 100, 200, 609, 250)
+    add_simple_node(graph, 'not_idle', 'lorem ipsum', 'n1', 100, 200, 609, 250)
     add_edge(graph, "e0", "n0", "n1", 'TEST TRIGGER', 0, 0, 0, 0)
     finish_graphml(root_node)
     xml_tree = etree.ElementTree(root_node)
