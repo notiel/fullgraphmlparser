@@ -89,7 +89,7 @@ style2_dict = {'class':"java.lang.Boolean",
 def prepare_graphml() -> etree._Element:
     """
     prepares graphml tag with parameters and all tags before graph tag
-    :return:
+    :return: root element
     """
     attr_qname = etree.QName(scheme_loc, "schemaLocation")
     graphml_root = etree.Element("graphml",
@@ -102,20 +102,28 @@ def prepare_graphml() -> etree._Element:
 def create_graph(tree_root: etree._Element) -> etree._Element:
     """
     adds graph tag to root
-    :param root:
-    :return:
+    :param tree_root: root element of graphml
+    :return: graph element
     """
-    graph = etree.SubElement(tree_root, 'graph', **graph_dict)
-    _ = etree.SubElement(graph, 'data', key='d0')
-    return graph
+    graph_node = etree.SubElement(tree_root, 'graph', **graph_dict)
+    _ = etree.SubElement(graph_node, 'data', key='d0')
+    return graph_node
 
-def add_simple_node(parent: etree._Element, node_text: str, content: str, id: int, h: int, w: int, x0: float, y0: float):
+def add_simple_node(parent: etree._Element, node_text: str, content: str, node_id: int,
+                    h: int, w: int, x0: float, y0: float):
     """
-    creates simple node
+    creates simple node with parameters
     :param parent:
+    :param node_text: node labes
+    :param content: node content
+    :param node_id: node id
+    :param h: height
+    :param w: width
+    :param x0: x of left upper cornet
+    :param y0: y of lest upper cornet
     :return:
     """
-    node = etree.SubElement(parent, "node", id="n%i" % id)
+    node = etree.SubElement(parent, "node", id="n%i" % node_id)
 
     data = etree.SubElement(node, "data", key="d4")
     data.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
@@ -142,21 +150,22 @@ def add_simple_node(parent: etree._Element, node_text: str, content: str, id: in
     _ = etree.SubElement(nodestyle, etree.QName(nmspc_y, 'Property'), **style2_dict)
 
 
-def finish_graphml(root_node: etree._Element):
+def finish_graphml(root: etree._Element):
     """
-
-    :param root_node:
+    creates finish tag
+    :param root: root node
     :return:
     """
-    data = etree.SubElement(root_node, 'data', key='d7')
+    data = etree.SubElement(root, 'data', key='d7')
     _ = etree.SubElement(data, etree.QName(namespace_dict['y'], 'Resources'))
 
-root_node = prepare_graphml()
-graph = create_graph(root_node)
-add_simple_node(graph, 'idle', '\n\nlorem ipsum', 0, 100, 200, 259, 255)
-add_simple_node(graph, 'not_idle', '\n\nlorem ipsum', 1, 200, 200, 500, 200)
-add_simple_node(graph, 'one_more', '\n\nlorem ipsum', 2, 250, 250, 250, 500)
-add_simple_node(graph, 'new', '\n\nlorem ipsum', 3, 150, 230, 500, 500)
-finish_graphml(root_node)
-xml_tree = etree.ElementTree(root_node)
-xml_tree.write("test.graphml", xml_declaration=True, encoding="UTF-8")
+
+if '__name__' == '__main__':
+    root_node = prepare_graphml()
+    graph = create_graph(root_node)
+    add_simple_node(graph, 'idle', '\n\nlorem ipsum', 0, 100, 200, 259, 255)
+    add_simple_node(graph, 'not_idle', '\n\nlorem ipsum', 1, 100, 200, 609, 250)
+
+    finish_graphml(root_node)
+    xml_tree = etree.ElementTree(root_node)
+    xml_tree.write("test.graphml", xml_declaration=True, encoding="UTF-8")
