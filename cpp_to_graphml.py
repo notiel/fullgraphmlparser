@@ -272,5 +272,5 @@ class EventHandlerParser:
             self._TraverseAST(childNode)
         self.level = self.level - 1
 
-parser = StateMachineParser(file_path = sys.argv[1])
-parser.Parse()
+if __name__ == '__main__':
+    StateMachineParser(file_path = sys.argv[1]).Parse()
