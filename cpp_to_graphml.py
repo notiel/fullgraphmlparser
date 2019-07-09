@@ -249,11 +249,17 @@ def GetText(node):
 
 
 # If the line below fails , set Clang library path with clang.cindex.Config.set_library_path
-index = clang.cindex.Index.create()
+try:
+    index = clang.cindex.Index.create()
+except:
+    # Hack to support linux (e.g. Travis)
+    clang.cindex.Config.set_library_file('/usr/lib/llvm-7/lib/libclang.so.1')
+    index = clang.cindex.Index.create()
+
 filename = sys.argv[1]
 
-with open(filename) as f:
-    fileContent = '\n'.join(f.readlines())
+with open(filename, 'r', newline='') as f:
+    fileContent = ''.join(f.readlines())
 
 translationUnit = index.parse(filename)
 rootNode = translationUnit.cursor
