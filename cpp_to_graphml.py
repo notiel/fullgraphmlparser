@@ -7,6 +7,13 @@ from lxml import etree
 
 import create_graphml
 
+try:
+    clang_index = clang.cindex.Index.create()
+except:
+    # Hack to support linux (e.g. Travis)
+    clang.cindex.Config.set_library_file('/usr/lib/llvm-8/lib/libclang.so.1')
+    clang_index = clang.cindex.Index.create()
+
 # Зависимости:
 # - clang/llvm
 #   Можно установить через 'choco install llvm'.
@@ -34,9 +41,10 @@ class ParsingContext:
 
 
 class StateMachineParser:
-    def __init__(self, ctx: ParsingContext, root_node):
-        self.root_node = root_node
-        self.ctx = ctx
+    def __init__(self, file_path: str):
+        translationUnit = clang_index.parse(file_path)
+        self.ctx = ParsingContext(file_path)
+        self.root_node = translationUnit.cursor
         self.states = {}
 
     def Parse(self):
@@ -264,16 +272,5 @@ class EventHandlerParser:
             self._TraverseAST(childNode)
         self.level = self.level - 1
 
-# If the line below fails , set Clang library path with clang.cindex.Config.set_library_path
-try:
-    index = clang.cindex.Index.create()
-except:
-    # Hack to support linux (e.g. Travis)
-    clang.cindex.Config.set_library_file('/usr/lib/llvm-8/lib/libclang.so.1')
-    index = clang.cindex.Index.create()
-
-filename = sys.argv[1]
-translationUnit = index.parse(filename)
-rootNode = translationUnit.cursor
-parser = StateMachineParser(ParsingContext(filename), rootNode)
+parser = StateMachineParser(file_path = sys.argv[1])
 parser.Parse()
