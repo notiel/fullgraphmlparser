@@ -12,7 +12,6 @@ from lxml import etree
 # Запуск:
 #   py -3 cpp_to_graphml.py <путь к cpp-файлу диаграммы>
 
-
 class StateMachineParser:
     def __init__(self, root_node, sm_name):
         self.root_node = root_node
@@ -253,7 +252,7 @@ try:
     index = clang.cindex.Index.create()
 except:
     # Hack to support linux (e.g. Travis)
-    clang.cindex.Config.set_library_file('/usr/lib/llvm-7/lib/libclang.so.1')
+    clang.cindex.Config.set_library_file('/usr/lib/llvm-8/lib/libclang.so.1')
     index = clang.cindex.Index.create()
 
 filename = sys.argv[1]
