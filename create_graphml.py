@@ -149,7 +149,7 @@ def create_graph(tree_root: etree._Element) -> etree._Element:
     _ = etree.SubElement(graph_node, 'data', key='d0')
     return graph_node
 
-def add_simple_node(parent: etree._Element, node_text: str, content: str, node_id: int,
+def add_simple_node(parent: etree._Element, node_text: str, content: str, node_id: str,
                     h: int, w: int, x0: float, y0: float):
     """
     creates simple node with parameters
@@ -163,7 +163,7 @@ def add_simple_node(parent: etree._Element, node_text: str, content: str, node_i
     :param y0: y of lest upper cornet
     :return:
     """
-    node = etree.SubElement(parent, "node", id="n%i" % node_id)
+    node = etree.SubElement(parent, "node", id=node_id)
 
     data = etree.SubElement(node, "data", key="d4")
     data.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
@@ -183,7 +183,7 @@ def add_simple_node(parent: etree._Element, node_text: str, content: str, node_i
 
     nodecontent = etree.SubElement(generic_node, etree.QName(nmspc_y, 'NodeLabel'), **node_content_dict)
     nodecontent.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
-    nodecontent.text = content
+    nodecontent.text = "\n\n"+content
 
     label_model = etree.SubElement(nodecontent, etree.QName(nmspc_y, "LabelModel"))
     _ = etree.SubElement(label_model, etree.QName(nmspc_y, "ErdAttributesNodeLabelModel"))
@@ -239,8 +239,8 @@ def finish_graphml(root: etree._Element):
 if __name__ == '__main__':
     root_node = prepare_graphml()
     graph = create_graph(root_node)
-    add_simple_node(graph, 'idle', 'lorem ipsum', 0, 100, 200, 259, 255)
-    add_simple_node(graph, 'not_idle', '\n\nlorem ipsum', 1, 100, 200, 609, 250)
+    add_simple_node(graph, 'idle', 'lorem ipsum', 'n0', 100, 200, 259, 255)
+    add_simple_node(graph, 'not_idle', '\n\nlorem ipsum', 'n1', 100, 200, 609, 250)
     add_edge(graph, "e0", "n0", "n1", 'TEST TRIGGER', 0, 0, 0, 0)
     finish_graphml(root_node)
     xml_tree = etree.ElementTree(root_node)
