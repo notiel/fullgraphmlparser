@@ -1,5 +1,7 @@
 import sys
 import clang.cindex
+import create_graphml
+from lxml import etree
 
 # Зависимости:
 # - clang/llvm
@@ -10,6 +12,7 @@ import clang.cindex
 # Запуск:
 #   py -3 cpp_to_plantuml.py <путь к cpp-файлу диаграммы>
 
+
 class StateMachineParser:
     def __init__(self, root_node, sm_name):
         self.root_node = root_node
@@ -19,7 +22,7 @@ class StateMachineParser:
     def Parse(self):
         self._TraverseAST(self.root_node)
         self._UpdateChilds()
-        self._OutputStates()
+        self._OutputDiagram()
 
     def _UpdateChilds(self):
         for state_name in self.states:
@@ -27,50 +30,66 @@ class StateMachineParser:
             if state.parent_state_name:
                 self.states[state.parent_state_name].child_states.append(state)
 
-    def _OutputStates(self):
-        print('@startuml')
-        print('scale max 2000 width')
+    def node_name(self, state_name):
+        return 'n%d' % self.node_ids[state_name]
+
+    def _OutputDiagram(self):
+        root_node = create_graphml.prepare_graphml()
+        self.graph = create_graphml.create_graph(root_node)
+        self.node_ids = {}
+        self.node_id = 0
+        self.edge_id = 0
+
+        for state_name in self.states:
+            self._OutputState(self.states[state_name])
+
         for state_name in self.states:
             state = self.states[state_name]
-            if not state.parent_state_name:
-                self._OutputState(state)
-        print('@enduml')
+            for name in state.handlers:
+                h = state.handlers[name]
+                if not h.target_state_name:
+                    continue
+                if h.state_name == h.target_state_name:
+                    continue
+                self._OutputEdge(h)
 
-    def _OutputState(self, state, offset=''):
-        print(offset + 'state %s {' % state.state_name)
-        for child in state.child_states:
-            self._OutputState(child, offset + '  ')
+        create_graphml.finish_graphml(root_node)
+        xml_tree = etree.ElementTree(root_node)
+        xml_tree.write("test.graphml", xml_declaration=True, encoding="UTF-8")
 
+    def _OutputEdge(self, h):
+        link_caption = h.event_type
+        if h.statements:
+            link_caption = link_caption + '/' + '\n'.join(h.statements)
+        create_graphml.add_edge(self.graph, "e%d" % self.edge_id,
+                                self.node_name(h.state_name),
+                                self.node_name(h.target_state_name),
+                                link_caption,
+                                0, 0, 0, 0)
+        self.edge_id += 1
+
+    def _OutputState(self, state):
+
+        state_content = ['', '']
         for name in state.handlers:
             h = state.handlers[name]
-            if not h.target_state_name:
-                continue
-            if h.state_name == h.target_state_name:
-                continue
-            assert h.state_name == state.state_name
-            link_caption = h.event_type
-            if h.statements:
-                link_caption = link_caption + '/' + '\n'.join(h.statements)
-            print(offset + '  %s --> %s : %s' %
-                  (h.state_name, h.target_state_name, link_caption))
-
-        for name in state.handlers:
             if h.state_name != h.target_state_name:
                 continue
 
-            h = state.handlers[name]
             event_type = h.event_type
             if event_type == 'Q_ENTRY_SIG':
                 event_type = 'entry'
             if event_type == 'Q_EXIT_SIG':
                 event_type = 'exit'
-            print(offset + '  %s : %s/' % (state.state_name, event_type))
+            state_content.append('%s/' % event_type)
             for statement in h.statements:
                 for line in statement.split('\n'):
-                    print(offset + '  %s : -- %s' % (state.state_name, line))
-            print(offset + '  %s : ' % (state.state_name))
+                    state_content.append('  ' + line)
 
-        print(offset + '}')
+        self.node_ids[state.state_name] = self.node_id
+        create_graphml.add_simple_node(self.graph, state.state_name, '\n'.join(
+            state_content), self.node_id, 100, 200, 259, 255)
+        self.node_id += 1
 
     def _TraverseAST(self, node):
         if self._IsStateFunction(node):
