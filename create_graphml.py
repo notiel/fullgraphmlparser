@@ -86,6 +86,46 @@ style2_dict = {'class':"java.lang.Boolean",
                "name":"doubleBorder",
                "value":"false"}
 
+linestyle_dict = {'color':'#000000',
+                  'type': 'line',
+                  'width': '1.0'}
+
+arrows_dict = {'source': 'none',
+               'target': 'standart'}
+
+edge_dict = {'alignment':"left",
+             'backgroundColor':"#FFFFFF",
+             'configuration':"AutoFlippingLabel",
+             'distance':"2.0",
+             'fontFamily':"Consolas",
+             'fontSize':"12",
+             'fontStyle':"plain",
+             'hasLineColor':"false",
+             'height':"18.7",
+             'horizontalTextPosition':"center",
+             'iconTextGap':"4",
+             'modelName':"free",
+             'modelPosition':"anywhere",
+             'preferredPlacement':"anywhere",
+             'ratio':"0.5",
+             'textColor':"#000000",
+             'verticalTextPosition':"bottom",
+             'visible':"true",
+             'width':"58.66",
+             'x':"45.64",
+             'y':"-9.35"}
+
+placement_dict = {'angle':"0.0",
+                  'angleOffsetOnRightSide':"0",
+                  'angleReference':"absolute",
+                  'angleRotationOnRightSide':"co",
+                  'distance':"-1.0",
+                  'frozen':"true",
+                  'placement':"anywhere",
+                  'side':"anywhere",
+                  'sideReference':"relative_to_edge_flow"}
+
+
 def prepare_graphml() -> etree._Element:
     """
     prepares graphml tag with parameters and all tags before graph tag
@@ -150,6 +190,36 @@ def add_simple_node(parent: etree._Element, node_text: str, content: str, node_i
     _ = etree.SubElement(nodestyle, etree.QName(nmspc_y, 'Property'), **style2_dict)
 
 
+def add_edge(parent: etree._Element, edge_id: str, source: str, target: str, text: str,
+             x1: float, y1: float, x2: float, y2: float):
+    """
+    adds edge to xml
+    :param parent: parent tag
+    :param edge_id: edge id
+    :param source: source node id
+    :param target: target node id
+    :param text: edge label
+    :param x1: start edge x
+    :param y1: start edge y
+    :param x2: finish edge x
+    :param y2: finish edge y
+    :return:
+    """
+    edge = etree.SubElement(parent, "edge", id=edge_id, source=source, target=target)
+    _  = etree.SubElement(edge, "data", key="d9")
+    data = etree.SubElement(edge, "data", key="d10")
+    nmspc_y = namespace_dict['y']
+    polyline_edge = etree.SubElement(data, etree.QName(nmspc_y, 'PolyLineEdge'))
+    _ = etree.SubElement(polyline_edge, etree.QName(nmspc_y, 'Path'), sx=str(x1), sy=str(y1), tx=str(x2), ty=str(y2))
+    _ = etree.SubElement(polyline_edge, etree.QName(nmspc_y, 'LineStyle'), **linestyle_dict)
+    _ = etree.SubElement(polyline_edge, etree.QName(nmspc_y, 'Arrows'), **arrows_dict)
+    edgelabel = etree.SubElement(polyline_edge, etree.QName (nmspc_y, 'EdgeLabel'), **edge_dict)
+    edgelabel.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
+    edgelabel.text = text
+    _ = etree.SubElement(edgelabel, etree.QName(nmspc_y, 'PreferredPlacementDescriptor'), **placement_dict)
+    _ = etree.SubElement(polyline_edge, etree.QName(nmspc_y, "BendStyle"), smoothed="false")
+
+
 def finish_graphml(root: etree._Element):
     """
     creates finish tag
@@ -160,12 +230,12 @@ def finish_graphml(root: etree._Element):
     _ = etree.SubElement(data, etree.QName(namespace_dict['y'], 'Resources'))
 
 
-if '__name__' == '__main__':
+if __name__ == '__main__':
     root_node = prepare_graphml()
     graph = create_graph(root_node)
     add_simple_node(graph, 'idle', '\n\nlorem ipsum', 0, 100, 200, 259, 255)
     add_simple_node(graph, 'not_idle', '\n\nlorem ipsum', 1, 100, 200, 609, 250)
-
+    add_edge(graph, "e0", "n0", "n1", 'TEST TRIGGER', 0, 0, 0, 0)
     finish_graphml(root_node)
     xml_tree = etree.ElementTree(root_node)
     xml_tree.write("test.graphml", xml_declaration=True, encoding="UTF-8")
