@@ -69,8 +69,6 @@ class StateMachineParser:
         self.edge_id += 1
 
     def _OutputState(self, state):
-
-        # state_content = ['', '']
         state_content = list()
         for name in state.handlers:
             h = state.handlers[name]
