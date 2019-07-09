@@ -29,7 +29,7 @@ graph_dict = {'edgedefault':'directed',
               'id': 'G'}
 
 simple_node_color_dict = {'color': '#E8EEF7',
-                          'color2' :' #B7C9E3',
+                          'color2' :'#B7C9E3',
                           'transparent' : "false"}
 
 configuration = 'com.yworks.entityRelationship.big_entity'
@@ -60,7 +60,7 @@ node_label_dict = {'alignment': 'center',
 
 node_content_dict = {'alignment': 'left',
              'autoSizePolicy': 'content',
-             'BackgroundColor': "false",
+             'hasBackgroundColor': "false",
              'configuration': 'com.yworks.entityRelationship.label.attributes',
              'fontFamily': 'Consolas',
              'fontSize': '12',
@@ -185,6 +185,12 @@ def add_simple_node(parent: etree._Element, node_text: str, content: str, node_i
     nodecontent.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
     nodecontent.text = content
 
+    label_model = etree.SubElement(nodecontent, etree.QName(nmspc_y, "LabelModel"))
+    _ = etree.SubElement(label_model, etree.QName(nmspc_y, "ErdAttributesNodeLabelModel"))
+    model_param = etree.SubElement(nodecontent, etree.QName(nmspc_y, "ModelParameter"))
+    _ =  etree.SubElement(model_param, etree.QName(nmspc_y, "ErdAttributesNodeLabelModelParameter"))
+
+
     nodestyle = etree.SubElement(generic_node, etree.QName(nmspc_y, 'StyleProperties'))
     _ = etree.SubElement(nodestyle, etree.QName(nmspc_y, 'Property'), **style1_dict)
     _ = etree.SubElement(nodestyle, etree.QName(nmspc_y, 'Property'), **style2_dict)
@@ -233,7 +239,7 @@ def finish_graphml(root: etree._Element):
 if __name__ == '__main__':
     root_node = prepare_graphml()
     graph = create_graph(root_node)
-    add_simple_node(graph, 'idle', '\n\nlorem ipsum', 0, 100, 200, 259, 255)
+    add_simple_node(graph, 'idle', 'lorem ipsum', 0, 100, 200, 259, 255)
     add_simple_node(graph, 'not_idle', '\n\nlorem ipsum', 1, 100, 200, 609, 250)
     add_edge(graph, "e0", "n0", "n1", 'TEST TRIGGER', 0, 0, 0, 0)
     finish_graphml(root_node)
