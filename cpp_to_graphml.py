@@ -257,4 +257,5 @@ with open(filename) as f:
 
 translationUnit = index.parse(filename)
 rootNode = translationUnit.cursor
-StateMachineParser(rootNode, 'OregonPlayer').Parse()
+parser = StateMachineParser(rootNode, 'OregonPlayer')
+parser.Parse()
