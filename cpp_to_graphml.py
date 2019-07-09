@@ -1,6 +1,7 @@
 import os
 import sys
 from dataclasses import dataclass
+from typing import Dict
 
 import clang.cindex
 from lxml import etree
@@ -50,7 +51,6 @@ class StateMachineParser:
     def Parse(self):
         self._TraverseAST(self.root_node)
         self._UpdateChilds()
-        self._OutputDiagram()
 
     def _UpdateChilds(self):
         for state_name in self.states:
@@ -58,65 +58,6 @@ class StateMachineParser:
             if state.parent_state_name:
                 self.states[state.parent_state_name].child_states.append(state)
 
-    def node_name(self, state_name):
-        return 'n%d' % self.node_ids[state_name]
-
-    def _OutputDiagram(self):
-        root_node = create_graphml.prepare_graphml()
-        self.graph = create_graphml.create_graph(root_node)
-        self.node_ids = {}
-        self.node_id = 0
-        self.edge_id = 0
-
-        for state_name in self.states:
-            self._OutputState(self.states[state_name])
-
-        for state_name in self.states:
-            state = self.states[state_name]
-            for name in state.handlers:
-                h = state.handlers[name]
-                if not h.target_state_name:
-                    continue
-                if h.state_name == h.target_state_name:
-                    continue
-                self._OutputEdge(h)
-
-        create_graphml.finish_graphml(root_node)
-        xml_tree = etree.ElementTree(root_node)
-        xml_tree.write("test.graphml", xml_declaration=True, encoding="UTF-8")
-
-    def _OutputEdge(self, h):
-        link_caption = h.event_type
-        if h.statements:
-            link_caption = link_caption + '/' + '\n'.join(h.statements)
-        create_graphml.add_edge(self.graph, "e%d" % self.edge_id,
-                                self.node_name(h.state_name),
-                                self.node_name(h.target_state_name),
-                                link_caption,
-                                0, 0, 0, 0)
-        self.edge_id += 1
-
-    def _OutputState(self, state):
-        state_content = list()
-        for name in state.handlers:
-            h = state.handlers[name]
-            if h.state_name != h.target_state_name:
-                continue
-
-            event_type = h.event_type
-            if event_type == 'Q_ENTRY_SIG':
-                event_type = 'entry'
-            if event_type == 'Q_EXIT_SIG':
-                event_type = 'exit'
-            state_content.append('%s/' % event_type)
-            for statement in h.statements:
-                for line in statement.split('\n'):
-                    state_content.append('  ' + line)
-
-        self.node_ids[state.state_name] = self.node_id
-        create_graphml.add_simple_node(self.graph, state.state_name, '\n'.join(
-            state_content), "n%i" % self.node_id, 100, 200, 259, 255)
-        self.node_id += 1
 
     def _TraverseAST(self, node):
         if self._IsStateFunction(node):
@@ -272,5 +213,81 @@ class EventHandlerParser:
             self._TraverseAST(childNode)
         self.level = self.level - 1
 
+class StateMachineWriter:
+    node_ids: Dict[str, int] = {}
+    node_id: int
+    edge_id: int
+
+    # TODO(aeremin) Pass some data object instead of whole StateMachineParser
+    def __init__(self, state_machine_parser: StateMachineParser):
+        self.parser = state_machine_parser
+
+    def WriteToFile(self, filename: str):
+        graphml_root_node = create_graphml.prepare_graphml()
+        self.graph = create_graphml.create_graph(graphml_root_node)
+        self.node_ids = {}
+        self.node_id = 0
+        self.edge_id = 0
+
+        for state_name in self.parser.states:
+            self._OutputState(self.parser.states[state_name])
+
+        for state_name in self.parser.states:
+            state = self.parser.states[state_name]
+            for name in state.handlers:
+                h = state.handlers[name]
+                if not h.target_state_name:
+                    continue
+                if h.state_name == h.target_state_name:
+                    continue
+                self._OutputEdge(h)
+
+        create_graphml.finish_graphml(graphml_root_node)
+        xml_tree = etree.ElementTree(graphml_root_node)
+        xml_tree.write(filename, xml_declaration=True, encoding="UTF-8")
+
+
+    def _node_name(self, state_name):
+        return 'n%d' % self.node_ids[state_name]
+
+    def _OutputEdge(self, h):
+        link_caption = h.event_type
+        if h.statements:
+            link_caption = link_caption + '/' + '\n'.join(h.statements)
+        create_graphml.add_edge(self.graph, "e%d" % self.edge_id,
+                                self._node_name(h.state_name),
+                                self._node_name(h.target_state_name),
+                                link_caption,
+                                0, 0, 0, 0)
+        self.edge_id += 1
+
+    def _OutputState(self, state):
+        state_content = list()
+        for name in state.handlers:
+            h = state.handlers[name]
+            if h.state_name != h.target_state_name:
+                continue
+
+            event_type = h.event_type
+            if event_type == 'Q_ENTRY_SIG':
+                event_type = 'entry'
+            if event_type == 'Q_EXIT_SIG':
+                event_type = 'exit'
+            state_content.append('%s/' % event_type)
+            for statement in h.statements:
+                for line in statement.split('\n'):
+                    state_content.append('  ' + line)
+
+        self.node_ids[state.state_name] = self.node_id
+        create_graphml.add_simple_node(self.graph, state.state_name, '\n'.join(
+            state_content), "n%i" % self.node_id, 100, 200, 259, 255)
+        self.node_id += 1
+
+
+
 if __name__ == '__main__':
-    StateMachineParser(file_path = sys.argv[1]).Parse()
+    file_path = sys.argv[1]
+    assert file_path.endswith('.cpp'), 'First command line argument should be a *.cpp file!'
+    parser = StateMachineParser(file_path)
+    parser.Parse()
+    StateMachineWriter(parser).WriteToFile(file_path.replace('.cpp', '.graphml'))
