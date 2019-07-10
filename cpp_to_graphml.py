@@ -24,6 +24,7 @@ except:
 # Запуск:
 #   py -3 cpp_to_graphml.py <путь к cpp-файлу диаграммы>
 
+
 class ParsingContext:
     state_machine_name: str
     file_path: float
@@ -57,7 +58,6 @@ class StateMachineParser:
             state = self.states[state_name]
             if state.parent_state_name:
                 self.states[state.parent_state_name].child_states.append(state)
-
 
     def _TraverseAST(self, node):
         if self._IsStateFunction(node):
@@ -133,9 +133,11 @@ class StateParser:
             assert binary_op.kind == clang.cindex.CursorKind.BINARY_OPERATOR, self.ctx.GetNodeText(
                 binary_op)
             rhs = list(binary_op.get_children())[1]
-            assert rhs.kind == clang.cindex.CursorKind.PAREN_EXPR, self.ctx.GetNodeText(rhs)
+            assert rhs.kind == clang.cindex.CursorKind.PAREN_EXPR, self.ctx.GetNodeText(
+                rhs)
             # GetText(rhs) should look like Q_SUPER(&OregonPlayer_global);
-            self.parent_state_name = self.ctx.GetNodeText(rhs)[len('Q_SUPER(&'):-len(');')]
+            self.parent_state_name = self.ctx.GetNodeText(
+                rhs)[len('Q_SUPER(&'):-len(');')]
             if self.parent_state_name == 'QHsm_top':
                 self.parent_state_name = None
 
@@ -292,7 +294,9 @@ class StateMachineWriter:
 
 if __name__ == '__main__':
     file_path = sys.argv[1]
-    assert file_path.endswith('.cpp'), 'First command line argument should be a *.cpp file!'
+    assert file_path.endswith(
+        '.cpp'), 'First command line argument should be a *.cpp file!'
     parser = StateMachineParser(file_path)
     parser.Parse()
-    StateMachineWriter(parser).WriteToFile(file_path.replace('.cpp', '.graphml'))
+    StateMachineWriter(parser).WriteToFile(
+        file_path.replace('.cpp', '.graphml'))
