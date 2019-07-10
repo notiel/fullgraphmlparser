@@ -11,13 +11,12 @@ namespace_dict = {None: "http://graphml.graphdrawing.org/xmlns",
 scheme = "http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd"
 scheme_loc = "http://www.w3.org/2001/XMLSchema-instance"
 
-
-prepare_dict = {'d0': {'attr.name':"Description", 'attr.type':"string", 'for':'graph'},
-                'd1': {'for': 'port', 'yfiles.type' : 'portgraphics'},
-                'd2': {'for': 'port', 'yfiles.type' : 'portgeometry'},
+prepare_dict = {'d0': {'attr.name': "Description", 'attr.type': "string", 'for': 'graph'},
+                'd1': {'for': 'port', 'yfiles.type': 'portgraphics'},
+                'd2': {'for': 'port', 'yfiles.type': 'portgeometry'},
                 'd3': {'for': 'port', 'yfiles.type': 'portuserdata'},
-                'd4': {'attr.name':"url", 'attr.type':"string", 'for':'node'},
-                'd5': {'attr.name':"description", 'attr.type':"string", 'for':'node'},
+                'd4': {'attr.name': "url", 'attr.type': "string", 'for': 'node'},
+                'd5': {'attr.name': "description", 'attr.type': "string", 'for': 'node'},
                 'd6': {'for': 'node', 'yfiles.type': 'nodegraphics'},
                 'd7': {'for': 'graphml', 'yfiles.type': 'resources'},
                 'd8': {'attr.name': "url", 'attr.type': "string", 'for': 'edge'},
@@ -25,105 +24,170 @@ prepare_dict = {'d0': {'attr.name':"Description", 'attr.type':"string", 'for':'g
                 'd10': {'for': 'edge', 'yfiles.type': 'edgegraphics'},
                 }
 
-graph_dict = {'edgedefault':'directed',
+graph_dict = {'edgedefault': 'directed',
               'id': 'G'}
 
 simple_node_color_dict = {'color': '#E8EEF7',
-                          'color2' :'#B7C9E3',
-                          'transparent' : "false"}
+                          'color2': '#B7C9E3',
+                          'transparent': "false"}
 
 configuration = 'com.yworks.entityRelationship.big_entity'
 
-node_border_dict = {'color' : "#000000",
-                    'type':"line",
-                    'width' : "1.0"}
+node_border_dict = {'color': "#000000",
+                    'type': "line",
+                    'width': "1.0"}
 
 node_label_dict = {'alignment': 'center',
-             'autoSizePolicy': "node_width",
-             'backgroundColor': "#B7C9E3",
-             'configuration': 'com.yworks.entityRelationship.label.name',
-             'fontFamily': 'Consolas',
-             'fontSize': '12',
-             'fontStyle': 'bold',
-             'hasLineColor': 'false',
-             'height': '18.7',
-             'horizontalTextPosition':'center',
-             'iconTextGap': '4',
-             'modelName': 'internal',
-             'modelPosition':'t',
-             'textColor': "#000000",
-             "verticalTextPosition": 'bottom',
-             'visible': 'true',
-             'width':'200',
-             'x': '0.0',
-             'y': '4.0'}
+                   'autoSizePolicy': "node_width",
+                   'backgroundColor': "#B7C9E3",
+                   'configuration': 'com.yworks.entityRelationship.label.name',
+                   'fontFamily': 'Consolas',
+                   'fontSize': '12',
+                   'fontStyle': 'bold',
+                   'hasLineColor': 'false',
+                   'height': '18.7',
+                   'horizontalTextPosition': 'center',
+                   'iconTextGap': '4',
+                   'modelName': 'internal',
+                   'modelPosition': 't',
+                   'textColor': "#000000",
+                   "verticalTextPosition": 'bottom',
+                   'visible': 'true',
+                   'width': '200',
+                   'x': '0.0',
+                   'y': '4.0'}
 
 node_content_dict = {'alignment': 'left',
-             'autoSizePolicy': 'content',
-             'hasBackgroundColor': "false",
-             'configuration': 'com.yworks.entityRelationship.label.attributes',
-             'fontFamily': 'Consolas',
-             'fontSize': '12',
-             'fontStyle': 'plane',
-             'hasLineColor': 'false',
-             'height': '40',
-             'horizontalTextPosition':'center',
-             'iconTextGap': '4',
-             'modelName': 'custom',
-             #'modelPosition':'tl',
-             'textColor': "#000000",
-             "verticalTextPosition": 'bottom',
-             'visible': 'true',
-             'width':'43.5',
-             'x': '0.0',
-             'y': '4.0'}
+                     'autoSizePolicy': 'content',
+                     'hasBackgroundColor': "false",
+                     'configuration': 'com.yworks.entityRelationship.label.attributes',
+                     'fontFamily': 'Consolas',
+                     'fontSize': '12',
+                     'fontStyle': 'plane',
+                     'hasLineColor': 'false',
+                     'height': '40',
+                     'horizontalTextPosition': 'center',
+                     'iconTextGap': '4',
+                     'modelName': 'custom',
+                     # 'modelPosition':'tl',
+                     'textColor': "#000000",
+                     "verticalTextPosition": 'bottom',
+                     'visible': 'true',
+                     'width': '43.5',
+                     'x': '0.0',
+                     'y': '4.0'}
 
-style1_dict = {'class':"java.lang.Boolean",
-               "name":"y.view.ShadowNodePainter.SHADOW_PAINTING",
-               "value":"true"}
+group_node_label_dict = {'alignment': "center",
+                         'autoSizePolicy': "node_width",
+                         'backgroundColor': "#EBEBEB",
+                         'borderDistance': "0.0",
+                         'fontFamily': "Consolas",
+                         'fontSize': "15",
+                         'fontStyle': "plain",
+                         'hasLineColor': "false",
+                         'height': "22.5",
+                         'horizontalTextPosition': "center",
+                         'iconTextGap': "4",
+                         'modelName': "internal",
+                         'modelPosition': "t",
+                         'textColor': "#000000",
+                         'verticalTextPosition': "bottom",
+                         'visible': "true",
+                         'width': "252.7",
+                         'x': "0.0",
+                         'y': "0.0"}
 
-style2_dict = {'class':"java.lang.Boolean",
-               "name":"doubleBorder",
-               "value":"false"}
+group_node_dict = {'alignment': "left",
+                   'autoSizePolicy': "node_size",
+                   'fontFamily': "Consolas",
+                   'fontSize': "12",
+                   'fontStyle': "plain",
+                   'hasBackgroundColor': "false",
+                   'hasLineColor': "false",
+                   'height': "223.75",
+                   'horizontalTextPosition': "center",
+                   'iconTextGap': "4",
+                   'modelName': "internal",
+                   'modelPosition': "t",
+                   'textColor': "#000000",
+                   'verticalTextPosition': "bottom",
+                   'visible': "true",
+                   'width': "252.68",
+                   'x': "0.0",
+                   'y': "4.0"}
 
-linestyle_dict = {'color':'#000000',
+style1_dict = {'class': "java.lang.Boolean",
+               "name": "y.view.ShadowNodePainter.SHADOW_PAINTING",
+               "value": "true"}
+
+style2_dict = {'class': "java.lang.Boolean",
+               "name": "doubleBorder",
+               "value": "false"}
+
+group_node_color_dict = {'color': '#F5F5F5',
+                         'transparent': "false"}
+
+group_node_state_dict = {'closed': "false",
+                         'closedHeight': "50.0",
+                         'closedWidth': "50.0",
+                         'innerGraphDisplayEnabled': "false"}
+
+group_node_inset_dict = {'bottom': "15",
+                         'bottomF': "15.0",
+                         'left': "15",
+                         'leftF': "15.0",
+                         'right': "15",
+                         'rightF': "15.0",
+                         'top': "15",
+                         'topF': "15.0"}
+
+group_node_borders_dict = {'bottom': "47",
+                           'bottomF': "46.9",
+                           'left': "11",
+                           'leftF': "11.35",
+                           'right': "11",
+                           'rightF': "11.35",
+                           'top': "25",
+                           'topF': "24.5"}
+
+linestyle_dict = {'color': '#000000',
                   'type': 'line',
                   'width': '1.0'}
 
 arrows_dict = {'source': 'none',
                'target': 'standart'}
 
-edge_dict = {'alignment':"left",
-             'backgroundColor':"#FFFFFF",
-             'configuration':"AutoFlippingLabel",
-             'distance':"2.0",
-             'fontFamily':"Consolas",
-             'fontSize':"12",
-             'fontStyle':"plain",
-             'hasLineColor':"false",
-             'height':"18.7",
-             'horizontalTextPosition':"center",
-             'iconTextGap':"4",
-             'modelName':"free",
-             'modelPosition':"anywhere",
-             'preferredPlacement':"anywhere",
-             'ratio':"0.5",
-             'textColor':"#000000",
-             'verticalTextPosition':"bottom",
-             'visible':"true",
-             'width':"58.66",
-             'x':"45.64",
-             'y':"-9.35"}
+edge_dict = {'alignment': "left",
+             'backgroundColor': "#FFFFFF",
+             'configuration': "AutoFlippingLabel",
+             'distance': "2.0",
+             'fontFamily': "Consolas",
+             'fontSize': "12",
+             'fontStyle': "plain",
+             'hasLineColor': "false",
+             'height': "18.7",
+             'horizontalTextPosition': "center",
+             'iconTextGap': "4",
+             'modelName': "free",
+             'modelPosition': "anywhere",
+             'preferredPlacement': "anywhere",
+             'ratio': "0.5",
+             'textColor': "#000000",
+             'verticalTextPosition': "bottom",
+             'visible': "true",
+             'width': "58.66",
+             'x': "45.64",
+             'y': "-9.35"}
 
-placement_dict = {'angle':"0.0",
-                  'angleOffsetOnRightSide':"0",
-                  'angleReference':"absolute",
-                  'angleRotationOnRightSide':"co",
-                  'distance':"-1.0",
-                  'frozen':"true",
-                  'placement':"anywhere",
-                  'side':"anywhere",
-                  'sideReference':"relative_to_edge_flow"}
+placement_dict = {'angle': "0.0",
+                  'angleOffsetOnRightSide': "0",
+                  'angleReference': "absolute",
+                  'angleRotationOnRightSide': "co",
+                  'distance': "-1.0",
+                  'frozen': "true",
+                  'placement': "anywhere",
+                  'side': "anywhere",
+                  'sideReference': "relative_to_edge_flow"}
 
 
 def prepare_graphml() -> etree._Element:
@@ -139,15 +203,19 @@ def prepare_graphml() -> etree._Element:
         _ = etree.SubElement(graphml_root, 'key', id=key, **prepare_dict[key])
     return graphml_root
 
-def create_graph(tree_root: etree._Element) -> etree._Element:
+
+def create_graph(tree_root: etree._Element, param: str) -> etree._Element:
     """
     adds graph tag to root
     :param tree_root: root element of graphml
+    :param param: graphparameter,
     :return: graph element
     """
+    graph_dict['id'] = param
     graph_node = etree.SubElement(tree_root, 'graph', **graph_dict)
     _ = etree.SubElement(graph_node, 'data', key='d0')
     return graph_node
+
 
 def add_simple_node(parent: etree._Element, node_text: str, content: str, node_id: str,
                     h: int, w: int, x0: float, y0: float):
@@ -172,8 +240,8 @@ def add_simple_node(parent: etree._Element, node_text: str, content: str, node_i
     nmspc_y = namespace_dict['y']
 
     generic_node = etree.SubElement(data_full, etree.QName(nmspc_y, "GenericNode"), configuration=configuration)
-    _ = etree.SubElement(generic_node,  etree.QName(nmspc_y, "Geometry"),
-                                height=str(h), width=str(w), x=str(x0), y=str(y0))
+    _ = etree.SubElement(generic_node, etree.QName(nmspc_y, "Geometry"),
+                         height=str(h), width=str(w), x=str(x0), y=str(y0))
     _ = etree.SubElement(generic_node, etree.QName(nmspc_y, 'Fill'), **simple_node_color_dict)
     _ = etree.SubElement(generic_node, etree.QName(nmspc_y, 'BorderStyle'), **node_border_dict)
 
@@ -188,12 +256,55 @@ def add_simple_node(parent: etree._Element, node_text: str, content: str, node_i
     label_model = etree.SubElement(nodecontent, etree.QName(nmspc_y, "LabelModel"))
     _ = etree.SubElement(label_model, etree.QName(nmspc_y, "ErdAttributesNodeLabelModel"))
     model_param = etree.SubElement(nodecontent, etree.QName(nmspc_y, "ModelParameter"))
-    _ =  etree.SubElement(model_param, etree.QName(nmspc_y, "ErdAttributesNodeLabelModelParameter"))
-
+    _ = etree.SubElement(model_param, etree.QName(nmspc_y, "ErdAttributesNodeLabelModelParameter"))
 
     nodestyle = etree.SubElement(generic_node, etree.QName(nmspc_y, 'StyleProperties'))
     _ = etree.SubElement(nodestyle, etree.QName(nmspc_y, 'Property'), **style1_dict)
     _ = etree.SubElement(nodestyle, etree.QName(nmspc_y, 'Property'), **style2_dict)
+
+
+def add_group_node(parent: etree._Element, node_text: str, content: str, node_id: str,
+                   h: int, w: int, x0: float, y0: float) -> etree._Element:
+    """
+    creates group node with parameters
+    :param parent:
+    :param node_text: node labes
+    :param content: node content
+    :param node_id: node id
+    :param h: height
+    :param w: width
+    :param x0: x of left upper cornet
+    :param y0: y of lest upper cornet
+    :return: group node tag
+    """
+    node_dict = {'id': node_id, "yfiles.foldertype": "group"}
+    nmspc_y = namespace_dict['y']
+
+    node = etree.SubElement(parent, "node", **node_dict)
+    data = etree.SubElement(node, 'data', key="d6")
+    proxy = etree.SubElement(data, etree.QName(nmspc_y, "ProxyAutoBoundsNode"))
+    realizers = etree.SubElement(proxy, etree.QName(nmspc_y, "Realizers"), active='0')
+
+    group_node = etree.SubElement(realizers, etree.QName(nmspc_y, "GroupNode"))
+    _ = etree.SubElement(group_node, etree.QName(nmspc_y, "Geometry"),
+                         height=str(h), width=str(w), x=str(x0), y=str(y0))
+    _ = etree.SubElement(group_node, etree.QName(nmspc_y, 'Fill'), **group_node_color_dict)
+    _ = etree.SubElement(group_node, etree.QName(nmspc_y, 'BorderStyle'), **node_border_dict)
+
+    nodelabel = etree.SubElement(group_node, etree.QName(nmspc_y, "NodeLabel"), **group_node_label_dict)
+    nodelabel.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
+    nodelabel.text = node_text
+
+    nodecontent = etree.SubElement(group_node, etree.QName(nmspc_y, 'NodeLabel'), **group_node_dict)
+    nodecontent.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
+    nodecontent.text = content
+
+    _ = etree.SubElement(group_node, etree.QName(nmspc_y, "Shape"), type="roundrectangle")
+    _ = etree.SubElement(group_node, etree.QName(nmspc_y, "State"), **group_node_state_dict)
+    _ = etree.SubElement(group_node, etree.QName(nmspc_y, "NodeBounds"), considerNodeLabelSize='true')
+    _ = etree.SubElement(group_node, etree.QName(nmspc_y, "Insets"), **group_node_inset_dict)
+    _ = etree.SubElement(group_node, etree.QName(nmspc_y, "BorderInsets"), **group_node_borders_dict)
+    return node
 
 
 def add_edge(parent: etree._Element, edge_id: str, source: str, target: str, text: str,
@@ -212,14 +323,14 @@ def add_edge(parent: etree._Element, edge_id: str, source: str, target: str, tex
     :return:
     """
     edge = etree.SubElement(parent, "edge", id=edge_id, source=source, target=target)
-    _  = etree.SubElement(edge, "data", key="d9")
+    _ = etree.SubElement(edge, "data", key="d9")
     data = etree.SubElement(edge, "data", key="d10")
     nmspc_y = namespace_dict['y']
     polyline_edge = etree.SubElement(data, etree.QName(nmspc_y, 'PolyLineEdge'))
     _ = etree.SubElement(polyline_edge, etree.QName(nmspc_y, 'Path'), sx=str(x1), sy=str(y1), tx=str(x2), ty=str(y2))
     _ = etree.SubElement(polyline_edge, etree.QName(nmspc_y, 'LineStyle'), **linestyle_dict)
     _ = etree.SubElement(polyline_edge, etree.QName(nmspc_y, 'Arrows'), **arrows_dict)
-    edgelabel = etree.SubElement(polyline_edge, etree.QName (nmspc_y, 'EdgeLabel'), **edge_dict)
+    edgelabel = etree.SubElement(polyline_edge, etree.QName(nmspc_y, 'EdgeLabel'), **edge_dict)
     edgelabel.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
     edgelabel.text = text
     _ = etree.SubElement(edgelabel, etree.QName(nmspc_y, 'PreferredPlacementDescriptor'), **placement_dict)
@@ -238,10 +349,12 @@ def finish_graphml(root: etree._Element):
 
 if __name__ == '__main__':
     root_node = prepare_graphml()
-    graph = create_graph(root_node)
-    add_simple_node(graph, 'idle', 'lorem ipsum', 'n0', 100, 200, 259, 255)
-    add_simple_node(graph, 'not_idle', 'lorem ipsum', 'n1', 100, 200, 609, 250)
-    add_edge(graph, "e0", "n0", "n1", 'TEST TRIGGER', 0, 0, 0, 0)
+    graph = create_graph(root_node, 'G')
+    group_node = add_group_node(graph, "parent", "parent_text", 'n0', 223, 252, 347, 152)
+    group_graph = create_graph(group_node, 'n0:')
+    add_simple_node(group_graph, 'idle', 'lorem ipsum', 'n0::n0', 100, 200, 374, 214)
+    add_simple_node(graph, 'not_idle', 'lorem ipsum', 'n1', 100, 200, 734, 213)
+    add_edge(graph, "e0", "n0::n0", "n1", 'TEST TRIGGER', 0, 0, 0, 0)
     finish_graphml(root_node)
     xml_tree = etree.ElementTree(root_node)
     xml_tree.write("test.graphml", xml_declaration=True, encoding="UTF-8")
