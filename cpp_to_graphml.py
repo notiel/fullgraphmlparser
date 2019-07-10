@@ -288,14 +288,19 @@ class StateMachineWriter:
         full_node_name = (self.state_name_to_node_name[state.parent_state_name] + ':' if state.parent_state_name
                           else '') + 'n%d' % index_as_child
         self.state_name_to_node_name[state.state_name] = full_node_name
-        group_node = create_graphml.add_group_node(graph_parent, state.state_name, '\n'.join(
-            state_content), full_node_name, 100, 200, 259, 255)
-        parent = create_graphml.create_graph(group_node, full_node_name + ':')
+        if state.child_states:
+            group_node = create_graphml.add_group_node(graph_parent, state.state_name, '\n'.join(
+                state_content), full_node_name, 100, 200, 259, 255)
+            parent = create_graphml.create_graph(
+                group_node, full_node_name + ':')
 
-        child_index = 0
-        for child_state in state.child_states:
-            self._OutputState(child_state, child_index, parent)
-            child_index += 1
+            child_index = 0
+            for child_state in state.child_states:
+                self._OutputState(child_state, child_index, parent)
+                child_index += 1
+        else:
+            create_graphml.add_simple_node(graph_parent, state.state_name, '\n'.join(
+                state_content), full_node_name, 100, 200, 259, 255)
 
 
 if __name__ == '__main__':
