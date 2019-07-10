@@ -22,6 +22,7 @@ from lxml import etree
 from string import Template
 from qm import *
 from typing import List, Tuple
+from math import fabs
 
 documentation = 'test qm file made by Ostranna and ksotar'  # documentation string
 framework = "qpc"  # framework, use qpc for c and qpcpp for cpp
