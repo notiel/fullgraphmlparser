@@ -213,9 +213,9 @@ class EventHandlerParser:
             self._TraverseAST(childNode)
         self.level = self.level - 1
 
+
 class StateMachineWriter:
-    node_ids: Dict[str, int] = {}
-    node_id: int
+    state_name_to_node_name: Dict[str, str] = {}
     edge_id: int
 
     # TODO(aeremin) Pass some data object instead of whole StateMachineParser
@@ -225,12 +225,15 @@ class StateMachineWriter:
     def WriteToFile(self, filename: str):
         graphml_root_node = create_graphml.prepare_graphml()
         self.graph = create_graphml.create_graph(graphml_root_node, 'G')
-        self.node_ids = {}
-        self.node_id = 0
+        self.state_name_to_node_name = {}
         self.edge_id = 0
 
+        child_index = 0
         for state_name in self.parser.states:
-            self._OutputState(self.parser.states[state_name])
+            state = self.parser.states[state_name]
+            if not state.parent_state_name:
+                self._OutputState(state, child_index, self.graph)
+                child_index += 1
 
         for state_name in self.parser.states:
             state = self.parser.states[state_name]
@@ -246,22 +249,18 @@ class StateMachineWriter:
         xml_tree = etree.ElementTree(graphml_root_node)
         xml_tree.write(filename, xml_declaration=True, encoding="UTF-8")
 
-
-    def _node_name(self, state_name):
-        return 'n%d' % self.node_ids[state_name]
-
     def _OutputEdge(self, h):
         link_caption = h.event_type
         if h.statements:
             link_caption = link_caption + '/' + '\n'.join(h.statements)
         create_graphml.add_edge(self.graph, "e%d" % self.edge_id,
-                                self._node_name(h.state_name),
-                                self._node_name(h.target_state_name),
+                                self.state_name_to_node_name[h.state_name],
+                                self.state_name_to_node_name[h.target_state_name],
                                 link_caption,
                                 0, 0, 0, 0)
         self.edge_id += 1
 
-    def _OutputState(self, state):
+    def _OutputState(self, state, index_as_child, graph_parent):
         state_content = list()
         for name in state.handlers:
             h = state.handlers[name]
@@ -278,11 +277,17 @@ class StateMachineWriter:
                 for line in statement.split('\n'):
                     state_content.append('  ' + line)
 
-        self.node_ids[state.state_name] = self.node_id
-        create_graphml.add_simple_node(self.graph, state.state_name, '\n'.join(
-            state_content), "n%i" % self.node_id, 100, 200, 259, 255)
-        self.node_id += 1
+        full_node_name = (self.state_name_to_node_name[state.parent_state_name] + ':' if state.parent_state_name
+                          else '') + 'n%d' % index_as_child
+        self.state_name_to_node_name[state.state_name] = full_node_name
+        group_node = create_graphml.add_group_node(graph_parent, state.state_name, '\n'.join(
+            state_content), full_node_name, 100, 200, 259, 255)
+        parent = create_graphml.create_graph(group_node, full_node_name + ':')
 
+        child_index = 0
+        for child_state in state.child_states:
+            self._OutputState(child_state, child_index, parent)
+            child_index += 1
 
 
 if __name__ == '__main__':
