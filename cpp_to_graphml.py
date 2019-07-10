@@ -284,6 +284,7 @@ class StateMachineWriter:
             for statement in h.statements:
                 for line in statement.split('\n'):
                     state_content.append('  ' + line)
+            state_content.append('\n')
 
         full_node_name = (self.state_name_to_node_name[state.parent_state_name] + ':' if state.parent_state_name
                           else '') + 'n%d' % index_as_child
