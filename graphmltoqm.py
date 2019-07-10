@@ -4,6 +4,7 @@ import graphml as gr
 import create_qm as cr
 from logger import logging
 import sys
+import os
 from typing import Union, List
 
 
@@ -18,9 +19,12 @@ def main(filenames: Union[List[str], str]):
     hcode = ""
     if not isinstance(filenames, list):
         filenames = [filenames]
+    modelnames: List[str] = list()
     for filename in filenames:
         try:
             data = xmltodict.parse(open(filename + '.graphml').read())
+            modelname = os.path.basename(filename)
+            modelnames.append(modelname)
         except FileNotFoundError:
             logging.error('File %s.graphml does not exist' % filename)
             continue
@@ -46,12 +50,12 @@ def main(filenames: Union[List[str], str]):
         # get notes
         notes = [node for node in flat_nodes if gr.is_node_a_note(node)]
         # create qm data
-        event_fields, hcode, cppcode, ctor_code, ctor_fields = cr.create_qm(qm_package, filename, start_node,
+        event_fields, hcode, cppcode, ctor_code, ctor_fields = cr.create_qm(qm_package, modelname, start_node,
                                                                             start_action, notes, qm_states,
                                                                             coords, player_signal)
     # create file with final code
     try:
-        cr.finish_qm(qm_model, qm_package, filenames, player_signal, event_fields, hcode, cppcode, ctor_code,
+        cr.finish_qm(qm_model, qm_package, filenames[0], modelnames, player_signal, event_fields, hcode, cppcode, ctor_code,
                      ctor_fields)
     except PermissionError:
         logging.fatal("File already exists and is locked")

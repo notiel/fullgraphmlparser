@@ -534,37 +534,37 @@ def create_qm_constructor(qm_package: etree._Element, Filename: str, filename: s
                                                                                                ctor_code, Filename)
 
 
-def create_qm_files(qm_model: etree._Element, filenames:[str], player_signal: [str], event_fields:dict, hcode: str,
+def create_qm_files(qm_model: etree._Element, modelnames:[str], player_signal: [str], event_fields:dict, hcode: str,
                     cppcode: str):
     """
     creates qm code for files c and h
     :param hcode: code for hfile
     :param cppcode: code for cpp file
-    :param filenames: list of filenames
+    :param modelnames: list of filenames
     :param qm_model: qm element to add code below
     :param player_signal: list of all trigger names
     :param event_fields: dict with new_event_fields
     :return:
     """
-    filenames = [filename[0].lower() + filename[1:] for filename in filenames]
-    Filenames = [filename[0].upper() + filename[1:] for filename in filenames]
-    name = '-'.join(filenames)
+    modelnames = [modelnames[0].lower() + modelnames[1:] for modelnames in modelnames]
+    Modelnames = [Modelname[0].upper() + Modelname[1:] for Modelname in modelnames]
+    name = '-'.join(modelnames)
     qm_directory = etree.SubElement(qm_model, "directory", name=".")
     qm_file = etree.SubElement(qm_directory, "file", name="%s.cpp" % name)
     qm_text = etree.SubElement(qm_file, "text")
     with open(r'.\templates\с_template') as t:
-        include = "\n".join(["#include \""+filename+".h\"" for filename in filenames])
+        include = "\n".join(["#include \"" + filename + ".h\"" for filename in modelnames])
         declare = ""
-        for Filename in Filenames:
-            filename  = Filename[0].lower() + Filename[1:]
-            declare+="\n$declare(SMs::%s)\n\nstatic %s %s; /* the only instance of the %s class */\n\n" \
-                     % (Filename, Filename, filename, Filename)
+        for Modelname in Modelnames:
+            modelname = Modelname[0].lower() + Modelname[1:]
+            declare += "\n$declare(SMs::%s)\n\nstatic %s %s; /* the only instance of the %s class */\n\n" \
+                       % (Modelname, Modelname, modelname, Modelname)
         consts=""
-        for filename in filenames:
-            consts+='QHsm * const the_%s = (QHsm *) &%s; /* the opaque pointer */\n' %(filename, filename)
+        for modelname in modelnames:
+            consts += 'QHsm * const the_%s = (QHsm *) &%s; /* the opaque pointer */\n' %(modelname, modelname)
         constructors = ""
-        for Filename in Filenames:
-            constructors+="$define(SMs::%s_ctor)\n$define(SMs::%s)\n\n" % (Filename, Filename)
+        for Modelname in Modelnames:
+            constructors += "$define(SMs::%s_ctor)\n$define(SMs::%s)\n\n" % (Modelname, Modelname)
         c_code = Template(t.read()).substitute(
             {"include": include, "declare": declare, "consts": consts, "constructors": constructors,
              "cppcode": cppcode})
@@ -573,12 +573,13 @@ def create_qm_files(qm_model: etree._Element, filenames:[str], player_signal: [s
     qm_text = etree.SubElement(qm_file, "text")
     with open("templates\h_template") as t:
         declares = ""
-        for filename in filenames:
-            Filename = filename[0].upper() + filename[1:]
-            declares+="extern QHsm * const the_%s; /* opaque pointer to the %s HSM */\n\n$declare(SMs::%s_ctor)" % (filename, filename, Filename)
+        for modelname in modelnames:
+            Modelname = modelname[0].upper() + modelname[1:]
+            declares += "extern QHsm * const the_%s; /* opaque pointer to the %s HSM */\n\n$declare(SMs::%s_ctor)" \
+                        % (modelname, modelname, Modelname)
 
         h_code = Template(t.read()).substitute({"hcode": hcode, "declares": declares, "filename_h": name + "_h",
-                                                "event_struct": get_event_struct(event_fields, filename),
+                                                "event_struct": get_event_struct(event_fields, modelname),
                                                 "player_signals": get_enum(player_signal)})
     qm_text.text = h_code
 
@@ -591,7 +592,8 @@ def prepare_qm():
     qm_package = etree.SubElement(qm_model, 'package', name=pack_name, stereotype=stereotype)
     return qm_model, qm_package
 
-def create_qm(qm_package, filename, start_state, start_action, notes, states, coords, player_signal) -> (dict, str, str):
+
+def create_qm(qm_package, modelname, start_state, start_action, notes, states, coords, player_signal) -> (dict, str, str):
     """
     function creates xml from list os states with trsnsitions using special rools and writes in to .qm file
     :param filename: name of resulting file
@@ -602,9 +604,9 @@ def create_qm(qm_package, filename, start_state, start_action, notes, states, co
     :param player_signal: list of all trigger names
     :return: list of special event fields orgonized as dictionary, code for h and cpp files
     """
-    filename = filename[0].lower() + filename[1:]
-    Filename = filename[0].upper() + filename[1:]
-    qm_class = etree.SubElement(qm_package, 'class', name=Filename, superclass="%s::QHsm" % framework)
+    modelname = modelname[0].lower() + modelname[1:]
+    Modelname = modelname[0].upper() + modelname[1:]
+    qm_class = etree.SubElement(qm_package, 'class', name=Modelname, superclass="%s::QHsm" % framework)
     qm_class_doc = etree.SubElement(qm_class, "documentation")
     event_fields = dict()
     ctor_fields = dict()
@@ -641,7 +643,7 @@ def create_qm(qm_package, filename, start_state, start_action, notes, states, co
     return event_fields, hcode, cppcode, ctor_code, ctor_fields
 
 
-def finish_qm(qm_model: etree._Element, qm_package, filenames: [str], player_signal, event_fields: dict,
+def finish_qm(qm_model: etree._Element, qm_package, filename: str, modelnames: [str], player_signal, event_fields: dict,
               hcode: str, cppcode: str, ctor_code: str, ctor_fields: dict):
     """
     creates final part of qm file
@@ -651,15 +653,15 @@ def finish_qm(qm_model: etree._Element, qm_package, filenames: [str], player_sig
     :param hcode:
     :param qm_model:
     :param qm_package:
-    :param filenames:
+    :param modelnames:
     :param player_signal:
     :param event_fields:
     :return:
     """
-    for filename in filenames:
-        filename = filename[0].lower() + filename[1:]
-        Filename = filename[0].upper() + filename[1:]
-        create_qm_constructor(qm_package, Filename, filename, ctor_code, ctor_fields)
-    create_qm_files(qm_model, filenames, player_signal, event_fields, hcode, cppcode)
+    for modelname in modelnames:
+        modelname = modelname[0].lower() + modelname[1:]
+        Modelname = modelname[0].upper() + modelname[1:]
+        create_qm_constructor(qm_package, Modelname, modelname, ctor_code, ctor_fields)
+    create_qm_files(qm_model, modelnames, player_signal, event_fields, hcode, cppcode)
     xml_tree = etree.ElementTree(qm_model)
-    xml_tree.write('%s.qm' % filename, xml_declaration=True, encoding="UTF-8")
+    xml_tree.write('%s.qm' % filename, xml_declaration=True, encoding="UTF-8", pretty_print=True)
