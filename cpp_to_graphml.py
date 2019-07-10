@@ -82,7 +82,8 @@ class StateParser:
     def __init__(self, ctx: ParsingContext, root_node):
         self.ctx = ctx
         self.root_node = root_node
-        self.state_name = root_node.spelling
+        self.state_name = root_node.spelling[(len(
+            self.ctx.state_machine_name) + 1):]
         self.handlers = {}
         self.parent_state_name = None
         self.child_states = []
@@ -140,6 +141,9 @@ class StateParser:
                 rhs)[len('Q_SUPER(&'):-len(');')]
             if self.parent_state_name == 'QHsm_top':
                 self.parent_state_name = None
+            else:
+                self.parent_state_name = self.parent_state_name[(
+                    len(self.ctx.state_machine_name) + 1):]
 
         for childNode in node.get_children():
             self._TraverseAST(childNode)
@@ -206,6 +210,8 @@ class EventHandlerParser:
                     # Cut state name from a string like 'Q_TRAN(&OregonPlayer_ghoul_wounded);'
                     self.target_state_name = self.ctx.GetNodeText(
                         rhs)[len('Q_TRAN(&'):-len(');')]
+                    self.target_state_name = self.target_state_name[(
+                        len(self.ctx.state_machine_name) + 1):]
                 return
 
             self.statements.append(self.ctx.GetNodeText(node))
