@@ -224,7 +224,7 @@ class StateMachineWriter:
 
     def WriteToFile(self, filename: str):
         graphml_root_node = create_graphml.prepare_graphml()
-        self.graph = create_graphml.create_graph(graphml_root_node)
+        self.graph = create_graphml.create_graph(graphml_root_node, 'G')
         self.node_ids = {}
         self.node_id = 0
         self.edge_id = 0
