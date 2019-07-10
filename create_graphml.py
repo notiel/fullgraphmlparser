@@ -107,8 +107,8 @@ group_node_dict = {'alignment': "left",
                    'height': "223.75",
                    'horizontalTextPosition': "center",
                    'iconTextGap': "4",
-                   'modelName': "internal",
-                   'modelPosition': "t",
+                   'modelName': "custom",
+                   #'modelPosition': "t",
                    'textColor': "#000000",
                    'verticalTextPosition': "bottom",
                    'visible': "true",
@@ -298,6 +298,11 @@ def add_group_node(parent: etree._Element, node_text: str, content: str, node_id
     nodecontent = etree.SubElement(group_node, etree.QName(nmspc_y, 'NodeLabel'), **group_node_dict)
     nodecontent.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
     nodecontent.text = content
+
+    label_model = etree.SubElement(nodecontent, etree.QName(nmspc_y, "LabelModel"))
+    _ = etree.SubElement(label_model, etree.QName(nmspc_y, "ErdAttributesNodeLabelModel"))
+    model_param = etree.SubElement(nodecontent, etree.QName(nmspc_y, "ModelParameter"))
+    _ = etree.SubElement(model_param, etree.QName(nmspc_y, "ErdAttributesNodeLabelModelParameter"))
 
     _ = etree.SubElement(group_node, etree.QName(nmspc_y, "Shape"), type="roundrectangle")
     _ = etree.SubElement(group_node, etree.QName(nmspc_y, "State"), **group_node_state_dict)
