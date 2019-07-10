@@ -357,4 +357,4 @@ if __name__ == '__main__':
     add_edge(graph, "e0", "n0::n0", "n1", 'TEST TRIGGER', 0, 0, 0, 0)
     finish_graphml(root_node)
     xml_tree = etree.ElementTree(root_node)
-    xml_tree.write("test.graphml", xml_declaration=True, encoding="UTF-8")
+    xml_tree.write("test.graphml", xml_declaration=True, pretty_print=True, encoding="UTF-8")
