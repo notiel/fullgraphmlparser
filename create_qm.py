@@ -508,9 +508,10 @@ def update_ctor_fields(parameter: str, ctor_fields: dict):
     :param parameter: string with parameter
     :return:
     """
-    parameter = parameter.replace(";", "")
-    data = parameter.split()
-    ctor_fields[data[-1]] = " ".join(data[:-1])
+    if parameter:
+        parameter = parameter.replace(";", "")
+        data = parameter.split()
+        ctor_fields[data[-1]] = " ".join(data[:-1])
     return ctor_fields
 
 
