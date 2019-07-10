@@ -1,7 +1,19 @@
+import os
 import sys
+from dataclasses import dataclass
+from typing import Dict
+
 import clang.cindex
-import create_graphml
 from lxml import etree
+
+import create_graphml
+
+try:
+    clang_index = clang.cindex.Index.create()
+except:
+    # Hack to support linux (e.g. Travis)
+    clang.cindex.Config.set_library_file('/usr/lib/llvm-8/lib/libclang.so.1')
+    clang_index = clang.cindex.Index.create()
 
 # Зависимости:
 # - clang/llvm
@@ -12,17 +24,33 @@ from lxml import etree
 # Запуск:
 #   py -3 cpp_to_graphml.py <путь к cpp-файлу диаграммы>
 
+class ParsingContext:
+    state_machine_name: str
+    file_path: float
+
+    _file_content: str
+
+    def __init__(self, file_path: str):
+        filename = os.path.splitext(os.path.basename(file_path))[0]
+        self.state_machine_name = filename[:1].upper() + filename[1:]
+        with open(file_path, 'r', newline='') as f:
+            self._file_content = ''.join(f.readlines())
+
+    def GetNodeText(self, node: clang.cindex.Cursor) -> str:
+        source_range = node.extent
+        return self._file_content[source_range.start.offset:source_range.end.offset + 1]
+
 
 class StateMachineParser:
-    def __init__(self, root_node, sm_name):
-        self.root_node = root_node
-        self.sm_name = sm_name
+    def __init__(self, file_path: str):
+        translationUnit = clang_index.parse(file_path)
+        self.ctx = ParsingContext(file_path)
+        self.root_node = translationUnit.cursor
         self.states = {}
 
     def Parse(self):
         self._TraverseAST(self.root_node)
         self._UpdateChilds()
-        self._OutputDiagram()
 
     def _UpdateChilds(self):
         for state_name in self.states:
@@ -30,69 +58,10 @@ class StateMachineParser:
             if state.parent_state_name:
                 self.states[state.parent_state_name].child_states.append(state)
 
-    def node_name(self, state_name):
-        return 'n%d' % self.node_ids[state_name]
-
-    def _OutputDiagram(self):
-        root_node = create_graphml.prepare_graphml()
-        self.graph = create_graphml.create_graph(root_node)
-        self.node_ids = {}
-        self.node_id = 0
-        self.edge_id = 0
-
-        for state_name in self.states:
-            self._OutputState(self.states[state_name])
-
-        for state_name in self.states:
-            state = self.states[state_name]
-            for name in state.handlers:
-                h = state.handlers[name]
-                if not h.target_state_name:
-                    continue
-                if h.state_name == h.target_state_name:
-                    continue
-                self._OutputEdge(h)
-
-        create_graphml.finish_graphml(root_node)
-        xml_tree = etree.ElementTree(root_node)
-        xml_tree.write("test.graphml", xml_declaration=True, encoding="UTF-8")
-
-    def _OutputEdge(self, h):
-        link_caption = h.event_type
-        if h.statements:
-            link_caption = link_caption + '/' + '\n'.join(h.statements)
-        create_graphml.add_edge(self.graph, "e%d" % self.edge_id,
-                                self.node_name(h.state_name),
-                                self.node_name(h.target_state_name),
-                                link_caption,
-                                0, 0, 0, 0)
-        self.edge_id += 1
-
-    def _OutputState(self, state):
-        state_content = list()
-        for name in state.handlers:
-            h = state.handlers[name]
-            if h.state_name != h.target_state_name:
-                continue
-
-            event_type = h.event_type
-            if event_type == 'Q_ENTRY_SIG':
-                event_type = 'entry'
-            if event_type == 'Q_EXIT_SIG':
-                event_type = 'exit'
-            state_content.append('%s/' % event_type)
-            for statement in h.statements:
-                for line in statement.split('\n'):
-                    state_content.append('  ' + line)
-
-        self.node_ids[state.state_name] = self.node_id
-        create_graphml.add_simple_node(self.graph, state.state_name, '\n'.join(
-            state_content), "n%i" % self.node_id, 100, 200, 259, 255)
-        self.node_id += 1
 
     def _TraverseAST(self, node):
         if self._IsStateFunction(node):
-            state = StateParser(node).Parse()
+            state = StateParser(self.ctx, node).Parse()
             self.states[state.state_name] = state
 #            print('''
 # State discovered:
@@ -105,12 +74,13 @@ class StateMachineParser:
     def _IsStateFunction(self, node):
         # and node.spelling.startswith('OregonPlayer_dead')
         return (node.kind == clang.cindex.CursorKind.FUNCTION_DECL and
-                node.spelling.startswith(self.sm_name + '_') and
+                node.spelling.startswith(self.ctx.state_machine_name + '_') and
                 not node.spelling.endswith('_ctor'))
 
 
 class StateParser:
-    def __init__(self, root_node):
+    def __init__(self, ctx: ParsingContext, root_node):
+        self.ctx = ctx
         self.root_node = root_node
         self.state_name = root_node.spelling
         self.handlers = {}
@@ -123,7 +93,7 @@ class StateParser:
 
     def _TraverseAST(self, node):
         if node.kind == clang.cindex.CursorKind.CASE_STMT:
-            h = EventHandlerParser(node, self.state_name).Parse()
+            h = EventHandlerParser(self.ctx, node, self.state_name).Parse()
 #            print('''EventHandler:
 # Event: %s, direction: %s --> %s, Code:
 # %s
@@ -157,15 +127,15 @@ class StateParser:
             #     |           `-DeclRefExpr 0x7ffff3a848a8 <col:14> '(anonymous enum at ./qhsm.h:46:1)' EnumConstant 0x7ffff3a1b090 'Q_RET_SUPER' '(anonymous enum at ./qhsm.h:46:1)
             #     `-BreakStmt 0x7ffff3a849e0 <oregonPlayer.cpp:601:13>
             compound_stmt = list(node.get_children())[0]
-            assert compound_stmt.kind == clang.cindex.CursorKind.COMPOUND_STMT, GetText(
+            assert compound_stmt.kind == clang.cindex.CursorKind.COMPOUND_STMT, self.ctx.GetNodeText(
                 compound_stmt)
             binary_op = list(compound_stmt.get_children())[0]
-            assert binary_op.kind == clang.cindex.CursorKind.BINARY_OPERATOR, GetText(
+            assert binary_op.kind == clang.cindex.CursorKind.BINARY_OPERATOR, self.ctx.GetNodeText(
                 binary_op)
             rhs = list(binary_op.get_children())[1]
-            assert rhs.kind == clang.cindex.CursorKind.PAREN_EXPR, GetText(rhs)
+            assert rhs.kind == clang.cindex.CursorKind.PAREN_EXPR, self.ctx.GetNodeText(rhs)
             # GetText(rhs) should look like Q_SUPER(&OregonPlayer_global);
-            self.parent_state_name = GetText(rhs)[len('Q_SUPER(&'):-len(');')]
+            self.parent_state_name = self.ctx.GetNodeText(rhs)[len('Q_SUPER(&'):-len(');')]
             if self.parent_state_name == 'QHsm_top':
                 self.parent_state_name = None
 
@@ -174,7 +144,8 @@ class StateParser:
 
 
 class EventHandlerParser:
-    def __init__(self, root_node, state_name):
+    def __init__(self, ctx: ParsingContext, root_node, state_name):
+        self.ctx = ctx
         assert root_node.kind == clang.cindex.CursorKind.CASE_STMT, root_node.kind
         # That's how subtree of such node is expected to look like (generated by 'clang -Xclang -ast-dump <filename>.cpp')
         # |-CaseStmt 0x7ffff3a83de8 <line:589:9, line:593:9>
@@ -217,7 +188,7 @@ class EventHandlerParser:
             # It's a bit hacky:
             # 1) BINARY_OPERATOR doesn't necessarily mean equality operator. Can be some weird dangling statement like 'a < Foo(5);'
             # 2) It would be better to check if it is a status_ assignment by checking first child, which should be DECL_REF_EXPR node
-            if node.kind == clang.cindex.CursorKind.BINARY_OPERATOR and GetText(node).startswith('status_ = '):
+            if node.kind == clang.cindex.CursorKind.BINARY_OPERATOR and self.ctx.GetNodeText(node).startswith('status_ = '):
                 # That's how subtree of such node is expected to look like (generated by 'clang -Xclang -ast-dump <filename>.cpp')
                 # |-BinaryOperator 0x7ffff3a845d0 <line:596:13, ./qhsm.h:66:45> 'QState':'int' lvalue '='
                 # | |-DeclRefExpr 0x7ffff3a844c0 <oregonPlayer.cpp:596:13> 'QState':'int' lvalue Var 0x7ffff3a82dd0 'status_' 'QState':'int'
@@ -227,41 +198,96 @@ class EventHandlerParser:
                 # |       `-ParenExpr 0x7ffff3a84550 <col:30, col:44> '(anonymous enum at ./qhsm.h:46:1)'
                 # |         `-DeclRefExpr 0x7ffff3a844e8 <col:31> '(anonymous enum at ./qhsm.h:46:1)' EnumConstant 0x7ffff3a1b120 'Q_RET_HANDLED' '(anonymous enum at ./qhsm.h:46:1)'
                 rhs = list(node.get_children())[1]
-                if GetText(rhs) == 'Q_HANDLED();':
+                if self.ctx.GetNodeText(rhs) == 'Q_HANDLED();':
                     self.target_state_name = self.state_name
                 else:
                     # Cut state name from a string like 'Q_TRAN(&OregonPlayer_ghoul_wounded);'
-                    self.target_state_name = GetText(
+                    self.target_state_name = self.ctx.GetNodeText(
                         rhs)[len('Q_TRAN(&'):-len(');')]
                 return
 
-            self.statements.append(GetText(node))
+            self.statements.append(self.ctx.GetNodeText(node))
 
         self.level = self.level + 1
         for childNode in node.get_children():
             self._TraverseAST(childNode)
         self.level = self.level - 1
 
+class StateMachineWriter:
+    node_ids: Dict[str, int] = {}
+    node_id: int
+    edge_id: int
 
-def GetText(node):
-    source_range = node.extent
-    return fileContent[source_range.start.offset:source_range.end.offset + 1]
+    # TODO(aeremin) Pass some data object instead of whole StateMachineParser
+    def __init__(self, state_machine_parser: StateMachineParser):
+        self.parser = state_machine_parser
+
+    def WriteToFile(self, filename: str):
+        graphml_root_node = create_graphml.prepare_graphml()
+        self.graph = create_graphml.create_graph(graphml_root_node)
+        self.node_ids = {}
+        self.node_id = 0
+        self.edge_id = 0
+
+        for state_name in self.parser.states:
+            self._OutputState(self.parser.states[state_name])
+
+        for state_name in self.parser.states:
+            state = self.parser.states[state_name]
+            for name in state.handlers:
+                h = state.handlers[name]
+                if not h.target_state_name:
+                    continue
+                if h.state_name == h.target_state_name:
+                    continue
+                self._OutputEdge(h)
+
+        create_graphml.finish_graphml(graphml_root_node)
+        xml_tree = etree.ElementTree(graphml_root_node)
+        xml_tree.write(filename, xml_declaration=True, encoding="UTF-8")
 
 
-# If the line below fails , set Clang library path with clang.cindex.Config.set_library_path
-try:
-    index = clang.cindex.Index.create()
-except:
-    # Hack to support linux (e.g. Travis)
-    clang.cindex.Config.set_library_file('/usr/lib/llvm-7/lib/libclang.so.1')
-    index = clang.cindex.Index.create()
+    def _node_name(self, state_name):
+        return 'n%d' % self.node_ids[state_name]
 
-filename = sys.argv[1]
+    def _OutputEdge(self, h):
+        link_caption = h.event_type
+        if h.statements:
+            link_caption = link_caption + '/' + '\n'.join(h.statements)
+        create_graphml.add_edge(self.graph, "e%d" % self.edge_id,
+                                self._node_name(h.state_name),
+                                self._node_name(h.target_state_name),
+                                link_caption,
+                                0, 0, 0, 0)
+        self.edge_id += 1
 
-with open(filename, 'r', newline='') as f:
-    fileContent = ''.join(f.readlines())
+    def _OutputState(self, state):
+        state_content = list()
+        for name in state.handlers:
+            h = state.handlers[name]
+            if h.state_name != h.target_state_name:
+                continue
 
-translationUnit = index.parse(filename)
-rootNode = translationUnit.cursor
-parser = StateMachineParser(rootNode, 'OregonPlayer')
-parser.Parse()
+            event_type = h.event_type
+            if event_type == 'Q_ENTRY_SIG':
+                event_type = 'entry'
+            if event_type == 'Q_EXIT_SIG':
+                event_type = 'exit'
+            state_content.append('%s/' % event_type)
+            for statement in h.statements:
+                for line in statement.split('\n'):
+                    state_content.append('  ' + line)
+
+        self.node_ids[state.state_name] = self.node_id
+        create_graphml.add_simple_node(self.graph, state.state_name, '\n'.join(
+            state_content), "n%i" % self.node_id, 100, 200, 259, 255)
+        self.node_id += 1
+
+
+
+if __name__ == '__main__':
+    file_path = sys.argv[1]
+    assert file_path.endswith('.cpp'), 'First command line argument should be a *.cpp file!'
+    parser = StateMachineParser(file_path)
+    parser.Parse()
+    StateMachineWriter(parser).WriteToFile(file_path.replace('.cpp', '.graphml'))

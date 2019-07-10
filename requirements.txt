@@ -1,2 +1,3 @@
 clang
 lxml
+xmltodict
