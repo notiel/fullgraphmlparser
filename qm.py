@@ -23,7 +23,6 @@ for states and  class Trigger for trigsitions between states and functions for t
 from dataclasses import *
 from graphml import *
 import re
-from logger import logging
 from typing import List, Optional
 
 divider = 10  # we divide graphml coordinates by that value
@@ -104,7 +103,7 @@ class State:
     childs: List['State']
 
 
-def get_state_by_id(states: [State], state_id: State, id_type: str) -> State:
+def get_state_by_id(states: [State], state_id: Optional[str, State], id_type: str) -> State:
     """
     gets state by its id
     :param id_type: for "old" we search for state with id = id, for "new" we search state with new_id = id
@@ -473,7 +472,7 @@ def get_parent_list(state: State) -> List[State]:
     return parents
 
 
-def get_path(state1: State, state2: State, states) -> str:
+def get_path(state1: str, state2: str, states) -> str:
     """
     gets path from state1 to state2 as for folders:
     EXAMPLE: "../../1/2"

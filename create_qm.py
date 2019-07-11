@@ -1,17 +1,20 @@
 """
 This module creates qm structure
 
--get_start_state_data(start_state: int, states: [State]) -> tuple:           function finds start state and gets it's id and coordinates
--get_parameters_data(parameter: str) -> tuple:                               get data for variables from parameters string
+-get_start_state_data(start_state: int, states: [State]) -> tuple:           function finds start state and gets it's
+                                                                             id and coordinates
+-get_parameters_data(parameter: str) -> tuple:                               get data for variables from parameters
+                                                                             string
 -get_parameters_code(parameter_text: str, qm_class: etree._Element, qm_documentation: etree._Element):
-                                                                            add parameters data to qm structure
+                                                                             add parameters data to qm structure
 -get_initial_code(qm_statechart: etree._Element,
-                              id_start: int, x: int, y: int)                 add xml tags for start element
-                                                                             to xml element tree
--get_trig_coordinates(trig: Trigger, states:[State])->str:                   create trigger coordinates string for qm
--get_action_coordinates(trig: Trigger)->tuple:                               functions gets coordinates for trigger label
-                                                                             (relative to trigger start point)
--get_state_code(qm_statechart: etree._Element, qm_states:[State])            add xml for states to xml element tree
+                              id_start: int, x: int, y: int)                  add xml tags for start element
+                                                                              to xml element tree
+-get_trig_coordinates(trig: Trigger, states:[State])->str:                    create trigger coordinates string for qm
+-get_action_coordinates(trig: Trigger)->tuple:                                functions gets coordinates for trigger
+                                                                              label
+                                                                              (relative to trigger start point)
+-get_state_code(qm_statechart: etree._Element, qm_states:[State])             add xml for states to xml element tree
 -get_simple_state_code(parent: etree._Element, state: State, states: [State]):
                                                                               get qm code for a simple state
 -get_group_state_code(parent: etree._Element, state: State, states: [State]): get code for qroup. uses recursion
@@ -24,6 +27,8 @@ from qm import *
 from typing import List, Tuple
 from math import fabs
 
+QMTag = etree._Element
+
 documentation = 'test qm file made by Ostranna and ksotar'  # documentation string
 framework = "qpc"  # framework, use qpc for c and qpcpp for cpp
 pack_name = 'SMs'  # name for your state machine package
@@ -35,10 +40,11 @@ exit_coordinates = "1,6,30,4"  # relative coordinates for exit action
 internal_trig_coordinates = "3,-1,20,0"  # relative coordinate for start of internal trigger label
 trig_action_coordinates = "0,-2,25,4"  # relative coordinates for trigger label
 
+# list of types from qpc framework
 type_list = ['uint8_t', 'uint16_t', "uint32_t", "int8_t", "int16_t", "int32_t", "uint_fast8_t", "uint_fast16_t"
                                                                                                 "uint_t", "int_t",
              "enum_t", "QSignal", "QEvt const *", "QTimeEvt", "QHsm", "QMsm", "QActive",
-             "QMActive", "QEQueue", "QMPool", "QPSet", 'void', "void*", "unsigned", "QStateHandler*", "QState*"]  # list of types from qpc framework
+             "QMActive", "QEQueue", "QMPool", "QPSet", 'void', "void*", "unsigned", "QStateHandler*", "QState*"]
 vis_dict = {"public": "0x00", "private": "0x02", "protected": "0x01"}  # codes for visibility of variables
 
 
@@ -63,17 +69,17 @@ def get_parameters_data(parameter: str) -> Tuple[str, str, str, str]:
             i = 1
     else:
         return "", "", "", ""
-    param_name = data[i].replace(";", "")
+    param_name: str = data[i].replace(";", "")
     param_name.replace(";", "")
     param_name.replace("/", "")
-    param_vis = "0x00"
-    param_comment = ""
-    if len(data) > i+1:
-        param_vis = vis_dict[data[i+1]] if data[i+1] in vis_dict.keys() else ""
+    param_vis: str = "0x00"
+    param_comment: str = ""
+    if len(data) > i + 1:
+        param_vis = vis_dict[data[i + 1]] if data[i + 1] in vis_dict.keys() else ""
         if param_vis:
-            data = data[(i+1):]
+            data = data[(i + 1):]
         else:
-            data = data[(i+1):]
+            data = data[(i + 1):]
         param_comment = " ".join(data)
     return param_name, param_type, param_vis, param_comment
 
@@ -86,35 +92,37 @@ def update_event_fields(parameter: str, event_fields: dict):
     :return:
     """
     if parameter:
-        data = parameter.split()
-        param_name = data[-1].replace(";", "")
-        param_type = ' '.join(data[:-1])
+        data: List[str] = parameter.split()
+        param_name: str = data[-1].replace(";", "")
+        param_type: str = ' '.join(data[:-1])
         event_fields[param_name] = param_type
         return event_fields
 
 
-def get_event_struct (event_fields: dict, filename: str) -> str:
+def get_event_struct(event_fields: dict, modelname: str) -> str:
     """
     funtion created c code for event struct using fields defined in event_fields dict
+    :param modelname: name of model
     :param event_fields: dict with event fields
     :return: str with event struct
     """
-    event_struct = "\ntypedef struct %s {\n    QEvt super;" %(filename+'QEvt')
+    event_struct: str = "\ntypedef struct %s {\n    QEvt super;" % (modelname + 'QEvt')
     for key in event_fields.keys():
         event_struct += "\n    %s %s;" % (event_fields[key], key)
-    event_struct+="\n} %s;\n" % (filename+'QEvt')
+    event_struct += "\n} %s;\n" % (modelname + 'QEvt')
     return event_struct
 
 
-def get_parameters_code(parameter_text: str, qm_class: etree._Element, qm_documentation: etree._Element):
+def get_parameters_code(parameter_text: str, qm_class: QMTag, qm_documentation: QMTag):
     """
     add parameters data to qm structure
+    :param qm_documentation: tag to documentation
     :param parameter_text: text with parameters data
     :param qm_class: xml field to add data
     :return:
     """
-    wrong_data = ""
-    parameters = parameter_text.split("\n")
+    wrong_data: str = ""
+    parameters: List[str] = parameter_text.split("\n")
     for parameter in parameters:
         parameter = parameter.strip()
         param_name, param_type, param_vis, param_comment = get_parameters_data(parameter)
@@ -139,13 +147,13 @@ def get_trig_coordinates(trig: Trigger, states: [State]) -> str:
     :param states: list of states
     :return: string with edge coordinate
     """
-    state_x = get_state_by_id(states, trig.source, "old").x
-    state_y = get_state_by_id(states, trig.source, "old").y
-    width = get_state_by_id(states, trig.source, "old").width
-    height = get_state_by_id(states, trig.source, "old").height
-    cur_x = state_x + width // 2 + trig.x
-    cur_y = state_y + height // 2 + trig.y
-    coordinates = [cur_x, cur_y, 2, 2]
+    state_x: int = get_state_by_id(states, trig.source, "old").x
+    state_y: int = get_state_by_id(states, trig.source, "old").y
+    width: int = get_state_by_id(states, trig.source, "old").width
+    height: int = get_state_by_id(states, trig.source, "old").height
+    cur_x: int = state_x + width // 2 + trig.x
+    cur_y: int = state_y + height // 2 + trig.y
+    coordinates: List[int] = [cur_x, cur_y, 2, 2]
     for i in range(len(trig.points)):
         x = trig.points[i][0]
         y = trig.points[i][1]
@@ -156,13 +164,13 @@ def get_trig_coordinates(trig: Trigger, states: [State]) -> str:
     state_y = get_state_by_id(states, trig.target, "old").y
     width = get_state_by_id(states, trig.target, "old").width
     height = get_state_by_id(states, trig.target, "old").height
-    last_x = state_x + width // 2 + trig.dx
-    last_y = state_y + height // 2 + trig.dy
+    last_x: int = state_x + width // 2 + trig.dx
+    last_y: int = state_y + height // 2 + trig.dy
     coordinates.extend([last_y - cur_y, last_x - cur_x])
     if fabs(last_x - cur_x) <= 1:
         coordinates.pop()
-    coordinates = ','.join(list(map(str, coordinates)))
-    return coordinates
+    coordinates_str = ','.join(list(map(str, coordinates)))
+    return coordinates_str
 
 
 def get_action_coordinates(trig: Trigger) -> str:
@@ -171,8 +179,8 @@ def get_action_coordinates(trig: Trigger) -> str:
     :param trig: trigger with label
     :return: string with action box coordinates (trigger label)
     """
-    dx = trig.action_x
-    dy = trig.action_y
+    dx: int = trig.action_x
+    dy: int = trig.action_y
     width = trig.action_width
     return "%i,%i,%i,4" % (dx, dy, width)
 
@@ -184,13 +192,13 @@ def get_guard_coordinates(trig: Trigger, move: int) -> str:
     :param trig: trigger with label
     :return: string with action box coordinates (trigger label)
     """
-    dx = trig.action_x
-    dy = trig.action_y + move
-    width = trig.action_width
+    dx: int = trig.action_x
+    dy: int = trig.action_y + move
+    width: int = trig.action_width
     return "%i,%i,%i,4" % (dx, dy, width)
 
 
-def get_initial_code(qm_statechart: etree._Element, start_state: State, start_action: str, x: int, y: int):
+def get_initial_code(qm_statechart: QMTag, start_state: State, start_action: str, x: int, y: int):
     """
     add xml tags for start element to xml element tree
     Exampe: <initial target="../1">
@@ -206,7 +214,7 @@ def get_initial_code(qm_statechart: etree._Element, start_state: State, start_ac
     :param y: y coordinate of initial transaction
     :return:
     """
-    path = '../'+start_state.new_id[1]
+    path: str = '../' + start_state.new_id[1]
     qm_initial = etree.SubElement(qm_statechart, 'initial', target=path)
     qm_initial_action = etree.SubElement(qm_initial, "action")
     qm_initial_action.text = start_action
@@ -214,7 +222,7 @@ def get_initial_code(qm_statechart: etree._Element, start_state: State, start_ac
     _ = etree.SubElement(qm_initial_glyph, 'action', box=box_coordinates)
 
 
-def get_state_code(qm_statechart: etree._Element, states: [State], printed_ids: [str]):
+def get_state_code(qm_statechart: QMTag, states: [State], printed_ids: [str]):
     """
     add qm code for states to xml element tree
     EXAMPLE
@@ -240,7 +248,7 @@ def get_state_code(qm_statechart: etree._Element, states: [State], printed_ids: 
                 get_simple_state_code(qm_statechart, state, states, printed_ids)
 
 
-def get_simple_state_code(parent: etree._Element, state: State, states: [State], printed_ids: [str]):
+def get_simple_state_code(parent: QMTag, state: State, states: [State], printed_ids: [str]):
     """
     get qm code for a simple state
     :param parent: xml tree element to add data
@@ -265,7 +273,7 @@ def get_simple_state_code(parent: etree._Element, state: State, states: [State],
     _ = etree.SubElement(qm_state_glyph, 'exit', box=exit_coordinates)
 
 
-def get_group_state_code(parent: etree._Element, state: State, states: [State], printed_ids: [str]):
+def get_group_state_code(parent: QMTag, state: State, states: [State], printed_ids: [str]):
     """
     get code for qroup. uses recursion
     :param parent: xml data to add state code
@@ -286,9 +294,9 @@ def get_group_state_code(parent: etree._Element, state: State, states: [State], 
         get_trig_code(qm_state, states, trig)
     for childstate in state.childs:
         if childstate.type == 'state':
-             get_simple_state_code(qm_state, childstate, states, printed_ids)
+            get_simple_state_code(qm_state, childstate, states, printed_ids)
         if childstate.type == 'group':
-             get_group_state_code(qm_state, childstate, states, printed_ids)
+            get_group_state_code(qm_state, childstate, states, printed_ids)
 
     qm_state_glyph = etree.SubElement(qm_state, 'state_glyph',
                                       node="%i,%i,%i,%i" % (state.x, state.y, state.width, state.height))
@@ -296,7 +304,7 @@ def get_group_state_code(parent: etree._Element, state: State, states: [State], 
     _ = etree.SubElement(qm_state_glyph, 'exit', box=exit_coordinates)
 
 
-def get_trig_code(qm_state: etree._Element, states: [State], trig: Trigger):
+def get_trig_code(qm_state: QMTag, states: [State], trig: Trigger):
     """
     functions adds qm tags for transition to xml tree
     :param qm_state: parent element for adding tags
@@ -315,7 +323,7 @@ def get_trig_code(qm_state: etree._Element, states: [State], trig: Trigger):
         get_choice_trigger_code(trig, states, qm_state)
 
 
-def get_internal_trigger_code(trig: Trigger, states: [State], qm_state: etree._Element):
+def get_internal_trigger_code(trig: Trigger, states: [State], qm_state: QMTag):
     """
     gets qm code for internal trigger
     EXAMPLE
@@ -330,12 +338,12 @@ def get_internal_trigger_code(trig: Trigger, states: [State], qm_state: etree._E
     :return:
     """
 
-    source_state = get_state_by_id(states, trig.source, "old")
-    x = source_state.x
-    delta = 2 if source_state.entry else 0
+    source_state: State = get_state_by_id(states, trig.source, "old")
+    x: int = source_state.x
+    delta: int = 2 if source_state.entry else 0
     if source_state.exit:
         delta += 2
-    y = source_state.y + 4 * trig.id + delta
+    y: int = source_state.y + 4 * trig.id + delta
     qm_trig = etree.SubElement(qm_state, 'tran', trig=trig.name)
     qm_action = etree.SubElement(qm_trig, 'action')
     qm_action.text = trig.action
@@ -344,7 +352,7 @@ def get_internal_trigger_code(trig: Trigger, states: [State], qm_state: etree._E
     _ = etree.SubElement(qm_trig_glyph, "action", box=trig_action_coordinates)
 
 
-def get_external_trigger_code(trig: Trigger, states: [State], qm_state: etree._Element):
+def get_external_trigger_code(trig: Trigger, states: [State], qm_state: QMTag):
     """
     creates qm code for external trigger
     get code for external trigger
@@ -360,17 +368,17 @@ def get_external_trigger_code(trig: Trigger, states: [State], qm_state: etree._E
     :param qm_state:
     :return:
     """
-    coordinates = get_trig_coordinates(trig, states)
-    action_coordinates = get_action_coordinates(trig)
+    coordinates: List[int] = get_trig_coordinates(trig, states)
+    action_coordinates: str = get_action_coordinates(trig)
     qm_trig = etree.SubElement(qm_state, 'tran', trig=trig.name, target="%s" %
-        get_path(trig.source, trig.target, states))
+                                                                        get_path(trig.source, trig.target, states))
     qm_action = etree.SubElement(qm_trig, 'action')
     qm_action.text = trig.action
     qm_trig_glyph = etree.SubElement(qm_trig, "tran_glyph", conn=coordinates)
     _ = etree.SubElement(qm_trig_glyph, "action", box=action_coordinates)
 
 
-def get_guard_trigger_code(trig: Trigger, states: [State], qm_state: etree._Element):
+def get_guard_trigger_code(trig: Trigger, states: [State], qm_state: QMTag):
     """
     get qm code for triggers without else or with internal else
     Example
@@ -391,8 +399,8 @@ def get_guard_trigger_code(trig: Trigger, states: [State], qm_state: etree._Elem
     :param qm_state:
     :return:
     """
-    coordinates = get_trig_coordinates(trig, states)
-    action_coordinates = get_action_coordinates(trig)
+    coordinates: str = get_trig_coordinates(trig, states)
+    action_coordinates: str = get_action_coordinates(trig)
     qm_trig = etree.SubElement(qm_state, 'tran', trig=trig.name)
     qm_choice = etree.SubElement(qm_trig, 'choice', target="../%s" % get_path(trig.source, trig.target, states))
     qm_guard = etree.SubElement(qm_choice, 'guard')
@@ -414,7 +422,7 @@ def get_guard_trigger_code(trig: Trigger, states: [State], qm_state: etree._Elem
     _ = etree.SubElement(qm_tran_glyph, "action", box=action_coordinates)
 
 
-def get_else_trig(trig: Trigger, states: [State]) -> Trigger:
+def get_else_trig(trig: Trigger, states: [State]) -> Optional[Trigger]:
     """
     check if exists else part of choice trigger and gets this trigger
     :param trig: choice trigger
@@ -433,11 +441,11 @@ def get_else_coordinates(coord_str: str) -> str:
     :param coord_str: string with trigger coordinates
     :return: string with coordinates
     """
-    coords = coord_str.split(',')
+    coords: List[str] = coord_str.split(',')
     return "%s,%s,4,-1,-10" % (coords[0], coords[1])
 
 
-def get_choice_trigger_code(trig: Trigger, states: [State], qm_state: etree._Element):
+def get_choice_trigger_code(trig: Trigger, states: [State], qm_state: QMTag):
     """
     get qm code for choice
     Example
@@ -465,13 +473,14 @@ def get_choice_trigger_code(trig: Trigger, states: [State], qm_state: etree._Ele
     :param qm_state: element of xml tree to add code to
     :return:
     """
-    coordinates = get_trig_coordinates(trig, states)
-    action_coordinates = get_action_coordinates(trig)
+    coordinates: List[str] = get_trig_coordinates(trig, states)
+    action_coordinates: str = get_action_coordinates(trig)
     qm_trig = etree.SubElement(qm_state, "tran", trig=trig.name)
     state_choice = get_state_by_id(states, trig.target, "old")
 
     for choice_trig in state_choice.trigs:
-        qm_choice = etree.SubElement(qm_trig, "choice", target="../%s" % get_path(trig.source, choice_trig.target, states))
+        qm_choice = etree.SubElement(qm_trig, "choice",
+                                     target="../%s" % get_path(trig.source, choice_trig.target, states))
         qm_guard = etree.SubElement(qm_choice, "guard")
         guard = choice_trig.guard.replace("[", "")
         guard = guard.replace("]", "")
@@ -484,7 +493,7 @@ def get_choice_trigger_code(trig: Trigger, states: [State], qm_state: etree._Ele
     _ = etree.SubElement(qm_trig_glyph, 'action', box=action_coordinates)
 
 
-def get_enum(text_labels: list) -> str:
+def get_enum(text_labels: List[str]) -> str:
     """
     prepares list of signals for enum structure for c language: joins them into one string comma and \n-separated
     and adds _SIG to each signal
@@ -495,7 +504,7 @@ def get_enum(text_labels: list) -> str:
     :param text_labels:
     :return: string
     """
-    enum_labels = [label + '_SIG' for label in text_labels]
+    enum_labels: List[str] = [label + '_SIG' for label in text_labels]
     enum = ',\n'.join(enum_labels)
     enum = 'enum PlayerSignals {\nTICK_SEC_SIG = Q_USER_SIG,\n\n' + enum
     enum = enum + ',\n\nLAST_USER_SIG\n};'
@@ -510,13 +519,13 @@ def update_ctor_fields(parameter: str, ctor_fields: dict):
     :return:
     """
     if parameter:
-        parameter = parameter.replace(";", "")
-        data = parameter.split()
+        parameter: str = parameter.replace(";", "")
+        data: List[str] = parameter.split()
         ctor_fields[data[-1]] = " ".join(data[:-1])
     return ctor_fields
 
 
-def create_qm_constructor(qm_package: etree._Element, Filename: str, filename: str, ctor_code: str, ctor_fields: dict):
+def create_qm_constructor(qm_package: QMTag, Filename: str, filename: str, ctor_code: str, ctor_fields: dict):
     """
     creates qm code for constructor
     :param ctor_code: extra constructor code
@@ -535,7 +544,7 @@ def create_qm_constructor(qm_package: etree._Element, Filename: str, filename: s
                                                                                                ctor_code, Filename)
 
 
-def create_qm_files(qm_model: etree._Element, modelnames:[str], player_signal: [str], event_fields:dict, hcode: str,
+def create_qm_files(qm_model: QMTag, modelnames: [str], player_signal: [str], event_fields: dict, hcode: str,
                     cppcode: str):
     """
     creates qm code for files c and h
@@ -547,42 +556,44 @@ def create_qm_files(qm_model: etree._Element, modelnames:[str], player_signal: [
     :param event_fields: dict with new_event_fields
     :return:
     """
-    modelnames = [modelnames[0].lower() + modelnames[1:] for modelnames in modelnames]
-    Modelnames = [Modelname[0].upper() + Modelname[1:] for Modelname in modelnames]
-    name = '-'.join(modelnames)
+    modelnames: List[str] = [modelname[0].lower() + modelname[1:] for modelname in modelnames]
+    Modelnames: List[str] = [Modelname[0].upper() + Modelname[1:] for Modelname in modelnames]
+    name: str = '-'.join(modelnames)
     qm_directory = etree.SubElement(qm_model, "directory", name=".")
     qm_file = etree.SubElement(qm_directory, "file", name="%s.cpp" % name)
     qm_text = etree.SubElement(qm_file, "text")
     with open(r'.\templates\с_template') as t:
-        include = "\n".join(["#include \"" + filename + ".h\"" for filename in modelnames])
-        declare = ""
+        include: str = "\n".join(["#include \"" + filename + ".h\"" for filename in modelnames])
+        declare: str = ""
         for Modelname in Modelnames:
             modelname = Modelname[0].lower() + Modelname[1:]
             declare += "\n$declare(SMs::%s)\n\nstatic %s %s; /* the only instance of the %s class */\n\n" \
                        % (Modelname, Modelname, modelname, Modelname)
-        consts=""
+        consts: str = ""
         for modelname in modelnames:
-            consts += 'QHsm * const the_%s = (QHsm *) &%s; /* the opaque pointer */\n' %(modelname, modelname)
-        constructors = ""
+            consts += 'QHsm * const the_%s = (QHsm *) &%s; /* the opaque pointer */\n' % (modelname, modelname)
+        constructors: str = ""
         for Modelname in Modelnames:
             constructors += "$define(SMs::%s_ctor)\n$define(SMs::%s)\n\n" % (Modelname, Modelname)
-        c_code = Template(t.read()).substitute(
+        c_code: str = Template(t.read()).substitute(
             {"include": include, "declare": declare, "consts": consts, "constructors": constructors,
              "cppcode": cppcode})
     qm_text.text = c_code
     qm_file = etree.SubElement(qm_directory, "file", name="%s.h" % name)
     qm_text = etree.SubElement(qm_file, "text")
-    with open("templates\h_template") as t:
+    with open(r"templates\h_template") as t:
         declares = ""
-        for modelname in modelnames:
-            Modelname = modelname[0].upper() + modelname[1:]
-            declares += "extern QHsm * const the_%s; /* opaque pointer to the %s HSM */\n\n$declare(SMs::%s_ctor)" \
-                        % (modelname, modelname, Modelname)
+        if modelnames:
+            for modelname in modelnames:
+                Modelname = modelname[0].upper() + modelname[1:]
+                declares += "extern QHsm * const the_%s; /* opaque pointer to the %s HSM */\n\n$declare(SMs::%s_ctor)" \
+                            % (modelname, modelname, Modelname)
 
-        h_code = Template(t.read()).substitute({"hcode": hcode, "declares": declares, "filename_h": name + "_h",
-                                                "event_struct": get_event_struct(event_fields, modelname),
-                                                "player_signals": get_enum(player_signal)})
-    qm_text.text = h_code
+            modelname = modelnames[0]
+            h_code = Template(t.read()).substitute({"hcode": hcode, "declares": declares, "filename_h": name + "_h",
+                                                    "event_struct": get_event_struct(event_fields, modelname),
+                                                    "player_signals": get_enum(player_signal)})
+            qm_text.text = h_code
 
 
 def prepare_qm():
@@ -594,23 +605,26 @@ def prepare_qm():
     return qm_model, qm_package
 
 
-def create_qm(qm_package, modelname, start_state, start_action, notes, states, coords, player_signal) -> (dict, str, str):
+def create_qm(qm_package: QMTag, modelname: str, start_state: str, start_action: str,
+              notes: List[Dict[str, Any]], states: List[State], coords: List[int]) \
+        -> Tuple[Dict[str, str], str, str, str, Dict[str, str]]:
     """
     function creates xml from list os states with trsnsitions using special rools and writes in to .qm file
-    :param filename: name of resulting file
+    :param start_action: action for start node
+    :param qm_package: tag to qm package
+    :param modelname: name of resulting file
     :param start_state: start state id
     :param notes  is a node with start variables
     :param states: list of states
     :param coords: tuple with min and max coords
-    :param player_signal: list of all trigger names
     :return: list of special event fields orgonized as dictionary, code for h and cpp files
     """
     modelname = modelname[0].lower() + modelname[1:]
     Modelname = modelname[0].upper() + modelname[1:]
     qm_class = etree.SubElement(qm_package, 'class', name=Modelname, superclass="%s::QHsm" % framework)
     qm_class_doc = etree.SubElement(qm_class, "documentation")
-    event_fields = dict()
-    ctor_fields = dict()
+    event_fields = Dict[str, str]
+    ctor_fields = Dict[str, str]
     hcode = ""
     cppcode = ""
     ctor_code = ""
@@ -644,10 +658,11 @@ def create_qm(qm_package, modelname, start_state, start_action, notes, states, c
     return event_fields, hcode, cppcode, ctor_code, ctor_fields
 
 
-def finish_qm(qm_model: etree._Element, qm_package, filename: str, modelnames: [str], player_signal, event_fields: dict,
+def finish_qm(qm_model: QMTag, qm_package, filename: str, modelnames: [str], player_signal, event_fields: dict,
               hcode: str, cppcode: str, ctor_code: str, ctor_fields: dict):
     """
     creates final part of qm file
+    :param filename: name of file
     :param ctor_fields:
     :param ctor_code:
     :param cppcode:
