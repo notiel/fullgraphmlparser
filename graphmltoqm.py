@@ -52,7 +52,7 @@ def main(filenames: Union[List[str], str]):
         # create qm data
         event_fields, hcode, cppcode, ctor_code, ctor_fields = cr.create_qm(qm_package, modelname, start_node,
                                                                             start_action, notes, qm_states,
-                                                                            coords, player_signal)
+                                                                            coords)
     # create file with final code
     try:
         cr.finish_qm(qm_model, qm_package, filenames[0], modelnames, player_signal, event_fields, hcode, cppcode,

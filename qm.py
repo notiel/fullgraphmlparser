@@ -20,7 +20,6 @@ for states and  class Trigger for trigsitions between states and functions for t
 -def get_childs(parent: State, states: [State]) ->[str]:                     gets list of childs
 """
 
-from dataclasses import *
 from graphml import *
 import re
 from typing import List, Optional
@@ -36,7 +35,7 @@ terminal_w = 10
 terminal_h = 10
 
 
-def get_state_by_id(states: [State], state_id: Optional[str, State], id_type: str) -> State:
+def get_state_by_id(states: [State], state_id: str, id_type: str) -> State:
     """
     gets state by its id
     :param id_type: for "old" we search for state with id = id, for "new" we search state with new_id = id
@@ -123,10 +122,10 @@ def create_state_from_node(node: dict, node_type: str, min_x: int, min_y: int, s
     actions: str = get_state_actions(node) if node_type == 'state' else get_group_actions(node)
     node_id = node['id']
     (triggers, player_signal) = create_actions(actions, node_id, player_signal)
-    state_entry: str = [trig.action for trig in triggers if trig.name == 'entry']
-    state_exit: str = [trig.action for trig in triggers if trig.name == 'exit']
-    state_entry: str = state_entry[0] if state_entry else ""
-    state_exit: str = state_exit[0] if state_exit else ""
+    state_entry: str = str([trig.action for trig in triggers if trig.name == 'entry'])
+    state_exit: str = str([trig.action for trig in triggers if trig.name == 'exit'])
+    # state_entry: str = state_entry[0] if state_entry else ""
+    # state_exit: str = state_exit[0] if state_exit else ""
     triggers: List[Trigger] = [trig for trig in triggers if trig.name != 'entry' and trig.name != 'exit']
     x, y, width, height = get_coordinates(node)
     x = x // divider - min_x // divider + 2

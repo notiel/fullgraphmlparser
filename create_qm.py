@@ -623,8 +623,8 @@ def create_qm(qm_package: QMTag, modelname: str, start_state: str, start_action:
     Modelname = modelname[0].upper() + modelname[1:]
     qm_class = etree.SubElement(qm_package, 'class', name=Modelname, superclass="%s::QHsm" % framework)
     qm_class_doc = etree.SubElement(qm_class, "documentation")
-    event_fields = Dict[str, str]
-    ctor_fields = Dict[str, str]
+    event_fields: Dict[str, str] = dict()
+    ctor_fields: Dict[str, str] = dict()
     hcode = ""
     cppcode = ""
     ctor_code = ""
