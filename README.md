@@ -1,1 +1,1 @@
-[![Build Status](https://travis-ci.org/notiel/cpptodiagrams.svg?branch=master)](https://travis-ci.org/notiel/cpptodiagrams)
+[![Build Status](https://travis-ci.org/notiel/fullgraphmlparser.svg?branch=master)](https://travis-ci.org/notiel/fullgraphmlparser)
