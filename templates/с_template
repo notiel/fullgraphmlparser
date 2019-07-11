@@ -1,13 +1,7 @@
 #include "qhsm.h"
 $include
-
-
 #include <stdint.h>
-
 //Q_DEFINE_THIS_FILE
-
-$declare
-
 /* global-scope definitions -----------------------------------------*/
 $consts
 $constructors

@@ -6,6 +6,7 @@ extern "C" {
 #include "qhsm.h"    /* include own framework tagunil version */
 #include "eventHandlers.h"
 $hcode
+$declare
 $event_struct
 $player_signals
 $declares

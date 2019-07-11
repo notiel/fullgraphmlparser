@@ -564,11 +564,6 @@ def create_qm_files(qm_model: QMTag, modelnames: [str], player_signal: [str], ev
     qm_text = etree.SubElement(qm_file, "text")
     with open(r'.\templates\с_template') as t:
         include: str = "\n".join(["#include \"" + filename + ".h\"" for filename in modelnames])
-        declare: str = ""
-        for Modelname in Modelnames:
-            modelname = Modelname[0].lower() + Modelname[1:]
-            declare += "\n$declare(SMs::%s)\n\nstatic %s %s; /* the only instance of the %s class */\n\n" \
-                       % (Modelname, Modelname, modelname, Modelname)
         consts: str = ""
         for modelname in modelnames:
             consts += 'QHsm * const the_%s = (QHsm *) &%s; /* the opaque pointer */\n' % (modelname, modelname)
@@ -576,12 +571,16 @@ def create_qm_files(qm_model: QMTag, modelnames: [str], player_signal: [str], ev
         for Modelname in Modelnames:
             constructors += "$define(SMs::%s_ctor)\n$define(SMs::%s)\n\n" % (Modelname, Modelname)
         c_code: str = Template(t.read()).substitute(
-            {"include": include, "declare": declare, "consts": consts, "constructors": constructors,
-             "cppcode": cppcode})
+            {"include": include, "consts": consts, "constructors": constructors, "cppcode": cppcode})
     qm_text.text = c_code
     qm_file = etree.SubElement(qm_directory, "file", name="%s.h" % name)
     qm_text = etree.SubElement(qm_file, "text")
     with open(r"templates\h_template") as t:
+        declare: str = ""
+        for Modelname in Modelnames:
+            modelname = Modelname[0].lower() + Modelname[1:]
+            declare += "\n$declare(SMs::%s)\n\nstatic %s %s; /* the only instance of the %s class */\n\n" \
+                       % (Modelname, Modelname, modelname, Modelname)
         declares = ""
         if modelnames:
             for modelname in modelnames:
@@ -590,7 +589,7 @@ def create_qm_files(qm_model: QMTag, modelnames: [str], player_signal: [str], ev
                             % (modelname, modelname, Modelname)
 
             modelname = modelnames[0]
-            h_code = Template(t.read()).substitute({"hcode": hcode, "declares": declares, "filename_h": name + "_h",
+            h_code = Template(t.read()).substitute({"hcode": hcode, "declare": declare, "declares": declares, "filename_h": name + "_h",
                                                     "event_struct": get_event_struct(event_fields, modelname),
                                                     "player_signals": get_enum(player_signal)})
             qm_text.text = h_code
