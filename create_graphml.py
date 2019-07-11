@@ -1,4 +1,7 @@
 from lxml import etree
+import xmltodict
+
+Tag = etree._Element
 
 namespace_dict = {None: "http://graphml.graphdrawing.org/xmlns",
                   'java': "http://www.yworks.com/xml/yfiles-common/1.0/java",
@@ -108,7 +111,7 @@ group_node_dict = {'alignment': "left",
                    'horizontalTextPosition': "center",
                    'iconTextGap': "4",
                    'modelName': "custom",
-                   #'modelPosition': "t",
+                   # 'modelPosition': "t",
                    'textColor': "#000000",
                    'verticalTextPosition': "bottom",
                    'visible': "true",
@@ -190,7 +193,7 @@ placement_dict = {'angle': "0.0",
                   'sideReference': "relative_to_edge_flow"}
 
 
-def prepare_graphml() -> etree._Element:
+def prepare_graphml() -> Tag:
     """
     prepares graphml tag with parameters and all tags before graph tag
     :return: root element
@@ -204,7 +207,7 @@ def prepare_graphml() -> etree._Element:
     return graphml_root
 
 
-def create_graph(tree_root: etree._Element, param: str) -> etree._Element:
+def create_graph(tree_root: Tag, param: str) -> Tag:
     """
     adds graph tag to root
     :param tree_root: root element of graphml
@@ -217,7 +220,7 @@ def create_graph(tree_root: etree._Element, param: str) -> etree._Element:
     return graph_node
 
 
-def add_simple_node(parent: etree._Element, node_text: str, content: str, node_id: str,
+def add_simple_node(parent: Tag, node_text: str, content: str, node_id: str,
                     h: int, w: int, x0: float, y0: float):
     """
     creates simple node with parameters
@@ -263,8 +266,8 @@ def add_simple_node(parent: etree._Element, node_text: str, content: str, node_i
     _ = etree.SubElement(nodestyle, etree.QName(nmspc_y, 'Property'), **style2_dict)
 
 
-def add_group_node(parent: etree._Element, node_text: str, content: str, node_id: str,
-                   h: int, w: int, x0: float, y0: float) -> etree._Element:
+def add_group_node(parent: Tag, node_text: str, content: str, node_id: str,
+                   h: int, w: int, x0: float, y0: float) -> Tag:
     """
     creates group node with parameters
     :param parent:
@@ -312,7 +315,7 @@ def add_group_node(parent: etree._Element, node_text: str, content: str, node_id
     return node
 
 
-def add_edge(parent: etree._Element, edge_id: str, source: str, target: str, text: str,
+def add_edge(parent: Tag, edge_id: str, source: str, target: str, text: str,
              x1: float, y1: float, x2: float, y2: float):
     """
     adds edge to xml
@@ -342,7 +345,37 @@ def add_edge(parent: etree._Element, edge_id: str, source: str, target: str, tex
     _ = etree.SubElement(polyline_edge, etree.QName(nmspc_y, "BendStyle"), smoothed="false")
 
 
-def finish_graphml(root: etree._Element):
+def add_start_state(parent: Tag, node_id: str):
+    """
+    adds start state from template
+    :param node_id: node_id
+    :param parent: parent tag
+    :return:
+    """
+    data = xmltodict.parse(open(r'graphml_templates/start_template.xml').read())
+    node = etree.SubElement(parent, "node", id=node_id)
+    data_tag = etree.SubElement(node, "data", key="d6")
+    get_tags_from_template(data_tag, data)
+
+
+def get_tags_from_template(parent: Tag, data: dict):
+    """
+    adda start state using template
+    :return:
+    """
+    for tag in data.keys():
+        if isinstance(data[tag], dict):
+            attributes = {key.replace("@", ""): data[tag][key] for key in data[tag].keys() if
+                          not isinstance(data[tag][key], dict) and not isinstance(data[tag][key], list)}
+            new_tag = etree.SubElement(parent, etree.QName(namespace_dict['y'], tag.replace("y:", "")), **attributes)
+            get_tags_from_template(new_tag, data[tag])
+        if isinstance(data[tag], list):
+            for i in range(len(data[tag])):
+                if isinstance(data[tag][i], dict):
+                    get_tags_from_template(parent, {tag: data[tag][i]})
+
+
+def finish_graphml(root: Tag):
     """
     creates finish tag
     :param root: root node
@@ -355,6 +388,7 @@ def finish_graphml(root: etree._Element):
 if __name__ == '__main__':
     root_node = prepare_graphml()
     graph = create_graph(root_node, 'G')
+    add_start_state(graph, "n2")
     group_node = add_group_node(graph, "parent", "parent_text", 'n0', 223, 252, 347, 152)
     group_graph = create_graph(group_node, 'n0:')
     add_simple_node(group_graph, 'idle', 'lorem ipsum', 'n0::n0', 100, 200, 374, 214)
