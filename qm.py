@@ -122,10 +122,12 @@ def create_state_from_node(node: dict, node_type: str, min_x: int, min_y: int, s
     actions: str = get_state_actions(node) if node_type == 'state' else get_group_actions(node)
     node_id = node['id']
     (triggers, player_signal) = create_actions(actions, node_id, player_signal)
-    state_entry: str = str([trig.action for trig in triggers if trig.name == 'entry'])
-    state_exit: str = str([trig.action for trig in triggers if trig.name == 'exit'])
-    # state_entry: str = state_entry[0] if state_entry else ""
-    # state_exit: str = state_exit[0] if state_exit else ""
+    state_entry: List[str] = str([trig.action for trig in triggers if trig.name == 'entry'])
+    state_exit: List[str] = str([trig.action for trig in triggers if trig.name == 'exit'])
+    state_entry_str: str = '#ifdef DESKTOP\n    printf("Entered state %s");\n#endif /* def DESKTOP */' % name
+    state_entry += state_entry[0] if state_entry else ""
+    state_exit_str: str = '#ifdef DESKTOP\n    printf("Exited state %s");\n#endif /* def DESKTOP */' % name
+    state_exit_str += state_exit[0] if state_exit else ""
     triggers: List[Trigger] = [trig for trig in triggers if trig.name != 'entry' and trig.name != 'exit']
     x, y, width, height = get_coordinates(node)
     x = x // divider - min_x // divider + 2
@@ -135,7 +137,7 @@ def create_state_from_node(node: dict, node_type: str, min_x: int, min_y: int, s
     parent: State = get_parent_by_coord(x, y, width, height, states)
     new_id: List[str] = [(parent.new_id[0] + "/" + str(len(parent.childs) + len(parent.trigs)))]
     state: State = State(name=name, type=node_type, id=node_id, new_id=new_id, actions=actions,
-                         entry=state_entry, exit=state_exit, trigs=triggers, x=x,
+                         entry=state_entry_str, exit=state_exit_str, trigs=triggers, x=x,
                          y=y, width=width, height=height, parent=parent, childs=list())
     return state, player_signal
 

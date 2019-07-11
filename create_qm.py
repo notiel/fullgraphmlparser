@@ -273,6 +273,7 @@ def get_simple_state_code(parent: QMTag, state: State, states: [State], printed_
     _ = etree.SubElement(qm_state_glyph, 'exit', box=exit_coordinates)
 
 
+
 def get_group_state_code(parent: QMTag, state: State, states: [State], printed_ids: [str]):
     """
     get code for qroup. uses recursion
@@ -297,7 +298,6 @@ def get_group_state_code(parent: QMTag, state: State, states: [State], printed_i
             get_simple_state_code(qm_state, childstate, states, printed_ids)
         if childstate.type == 'group':
             get_group_state_code(qm_state, childstate, states, printed_ids)
-
     qm_state_glyph = etree.SubElement(qm_state, 'state_glyph',
                                       node="%i,%i,%i,%i" % (state.x, state.y, state.width, state.height))
     _ = etree.SubElement(qm_state_glyph, 'entry', box=entry_coordinates)
