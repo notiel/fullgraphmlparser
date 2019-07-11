@@ -1,0 +1,15 @@
+dist: xenial
+language: python
+python:
+  - "3.7"
+install:
+  - pip install -r requirements.txt
+script:
+  - pytest
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    - llvm-toolchain-xenial-8
+    packages:
+      - clang-8

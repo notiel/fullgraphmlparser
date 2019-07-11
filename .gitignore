@@ -1,7 +1,5 @@
 .*
 !/.gitignore
 __*
-*.h
-*.c
 *.qm
-*.cpp
+__pycache__
