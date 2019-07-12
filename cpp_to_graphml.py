@@ -253,11 +253,9 @@ class StateMachineWriter:
         self.edge_id = 0
 
         child_index = 0
-        for state_name in self.parser.states:
-            state = self.parser.states[state_name]
-            if not state.parent_state_name:
-                self._OutputState(state, child_index, self.graph)
-                child_index += 1
+        for state in self.parser.states['global'].child_states:
+            self._OutputState(state, child_index, self.graph)
+            child_index += 1
 
         for state_name in self.parser.states:
             state = self.parser.states[state_name]
@@ -304,9 +302,9 @@ class StateMachineWriter:
                 for statement in h.statements:
                     for line in statement.split('\n'):
                         state_content.append('  ' + line)
-                state_content.append('\n')
+                state_content.append('')
 
-        full_node_name = (self.state_name_to_node_name[state.parent_state_name] + ':' if state.parent_state_name
+        full_node_name = (self.state_name_to_node_name[state.parent_state_name] + ':' if state.parent_state_name != 'global'
                           else '') + 'n%d' % index_as_child
         self.state_name_to_node_name[state.state_name] = full_node_name
         if state.child_states:
