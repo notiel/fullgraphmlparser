@@ -249,10 +249,15 @@ class StateMachineWriter:
     def WriteToFile(self, filename: str):
         graphml_root_node = create_graphml.prepare_graphml()
         self.graph = create_graphml.create_graph(graphml_root_node, 'G')
+        create_graphml.add_start_state(self.graph, "n0")
         self.state_name_to_node_name = {}
-        self.edge_id = 0
+        create_graphml.add_edge(self.graph, "e0",
+                                "n0", "n1",
+                                "???",
+                                0, 0, 0, 0)
+        self.edge_id = 1
 
-        child_index = 0
+        child_index = 1
         for state in self.parser.states['global'].child_states:
             self._OutputState(state, child_index, self.graph)
             child_index += 1
