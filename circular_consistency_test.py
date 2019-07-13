@@ -49,3 +49,6 @@ class CircularConsistencyTest(unittest.TestCase):
         cpp_to_graphml.StateMachineWriter(parser).WriteToFile('./testdata/test_output/oregonPlayer.graphml')
         graphmltoqm.main('./testdata/test_output/oregonPlayer')
         subprocess.run(getQmWithArgs() + ['./testdata/test_output/oregonPlayer.qm', '-c'], check=True, timeout=10)
+
+if __name__ == '__main__':
+    unittest.main()
