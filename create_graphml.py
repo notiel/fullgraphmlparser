@@ -358,6 +358,18 @@ def add_start_state(parent: Tag, node_id: str):
     get_tags_from_template(data_tag, data)
 
 
+def add_choice_state(parent: Tag, node_id: str):
+    """
+    adds start state from template
+    :param node_id: node_id
+    :param parent: parent tag
+    :return:
+    """
+    data = xmltodict.parse(open(r'graphml_templates/choice_template.xml').read())
+    node = etree.SubElement(parent, "node", id=node_id)
+    data_tag = etree.SubElement(node, "data", key="d6")
+    get_tags_from_template(data_tag, data)
+
 def get_tags_from_template(parent: Tag, data: dict):
     """
     adda start state using template
@@ -393,7 +405,12 @@ if __name__ == '__main__':
     group_graph = create_graph(group_node, 'n0:')
     add_simple_node(group_graph, 'idle', 'lorem ipsum', 'n0::n0', 100, 200, 374, 214)
     add_simple_node(graph, 'not_idle', 'lorem ipsum', 'n1', 100, 200, 734, 213)
+    add_choice_state(graph, "n3")
     add_edge(graph, "e0", "n0::n0", "n1", 'TEST TRIGGER', 0, 0, 0, 0)
+    add_edge(graph, "e1", "n2", "n1", "initial", 0, 0, 0, 0)
+    add_edge(graph, "e2", "n1", "n3", "choice_trigger", 0, 0, 0, 0)
+    add_edge(graph, "e3", "n3", "n0::n0", "guard1", 0, 0, 0, 0)
+    add_edge(graph, "e4", "n3", "n0", "guard2", 0, 0, 0, 0)
     finish_graphml(root_node)
     xml_tree = etree.ElementTree(root_node)
     xml_tree.write("test.graphml", xml_declaration=True, pretty_print=True, encoding="UTF-8")
