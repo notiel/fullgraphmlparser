@@ -24,6 +24,14 @@ except:
 # Запуск:
 #   py -3 cpp_to_graphml.py <путь к cpp-файлу диаграммы>
 
+@dataclass
+class EventHandler:
+    state_from: str
+    state_to: str
+    event_type: str
+    condition: Optional[str]
+    statements: List[str]
+
 
 class ParsingContext:
     state_machine_name: str
@@ -149,15 +157,6 @@ class StateParser:
 
         for childNode in node.get_children():
             self._TraverseAST(childNode)
-
-
-@dataclass
-class EventHandler:
-    state_from: str
-    state_to: str
-    event_type: str
-    condition: Optional[str]
-    statements: List[str]
 
 
 class EventHandlerParser:
