@@ -561,7 +561,7 @@ def create_qm_files(qm_model: QMTag, modelnames: [str], player_signal: [str], ev
     qm_directory = etree.SubElement(qm_model, "directory", name=".")
     qm_file = etree.SubElement(qm_directory, "file", name="%s.cpp" % name)
     qm_text = etree.SubElement(qm_file, "text")
-    with open(r'.\templates\с_template') as t:
+    with open('templates/с_template') as t:
         include: str = "\n".join(["#include \"" + filename + ".h\"" for filename in modelnames])
         consts: str = ""
         for modelname in modelnames:
@@ -574,7 +574,7 @@ def create_qm_files(qm_model: QMTag, modelnames: [str], player_signal: [str], ev
     qm_text.text = c_code
     qm_file = etree.SubElement(qm_directory, "file", name="%s.h" % name)
     qm_text = etree.SubElement(qm_file, "text")
-    with open(r"templates\h_template") as t:
+    with open("templates/h_template") as t:
         declare: str = ""
         for Modelname in Modelnames:
             modelname = Modelname[0].lower() + Modelname[1:]
