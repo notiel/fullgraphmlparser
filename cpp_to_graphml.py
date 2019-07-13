@@ -27,7 +27,6 @@ except:
 
 class ParsingContext:
     state_machine_name: str
-    file_path: float
 
     _file_content: str
 
