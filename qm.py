@@ -80,11 +80,10 @@ def create_actions(raw_triggers: str, source: str, player_signal: [str]) -> [Tri
     :param player_signal - list of all sygnals
     :return: list of Triggers, list of sygnals
     """
-    raw_triggers = raw_triggers
     # regexp takes beginnig of string, than some a-zA-Z0-9_ symbols tnan spaces, than [guard] then /
-    trigger_regexp: str = r"^\w+ *(\[.+?\])?/"
-    trigger_list = re.findall(trigger_regexp, raw_triggers)
-    trigger_data = re.split(trigger_regexp, raw_triggers)
+    trigger_regexp: str = r"^.*\/"
+    trigger_list = re.findall(trigger_regexp, raw_triggers, re.MULTILINE)
+    trigger_data = re.split(trigger_regexp, raw_triggers, re.MULTILINE)
     triggers: Dict[str, str] = dict(list(zip(trigger_list, trigger_data[1:])))
     actions: List[Trigger] = list()
     for (trigger_id, (trigger, action)) in enumerate(triggers.items(), start=1):
