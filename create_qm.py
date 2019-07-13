@@ -44,7 +44,7 @@ trig_action_coordinates = "0,-2,25,4"  # relative coordinates for trigger label
 type_list = ['uint8_t', 'uint16_t', "uint32_t", "int8_t", "int16_t", "int32_t", "uint_fast8_t", "uint_fast16_t"
                                                                                                 "uint_t", "int_t",
              "enum_t", "QSignal", "QEvt const *", "QTimeEvt", "QHsm", "QMsm", "QActive",
-             "QMActive", "QEQueue", "QMPool", "QPSet", 'void', "void*", "unsigned", "QStateHandler*", "QState*"]
+             "QMActive", "QEQueue", "QMPool", "QPSet", 'void', "void*", "unsigned", "QStateHandler", "QState*"]
 vis_dict = {"public": "0x00", "private": "0x02", "protected": "0x01"}  # codes for visibility of variables
 
 
@@ -271,7 +271,6 @@ def get_simple_state_code(parent: QMTag, state: State, states: [State], printed_
                                       node="%i,%i,%i,%i" % (state.x, state.y, state.width, state.height))
     _ = etree.SubElement(qm_state_glyph, 'entry', box=entry_coordinates)
     _ = etree.SubElement(qm_state_glyph, 'exit', box=exit_coordinates)
-
 
 
 def get_group_state_code(parent: QMTag, state: State, states: [State], printed_ids: [str]):

@@ -80,14 +80,17 @@ def create_actions(raw_triggers: str, source: str, player_signal: [str]) -> [Tri
     :param player_signal - list of all sygnals
     :return: list of Triggers, list of sygnals
     """
-    trigger_regexp: str = r"\S+\s*/" + '\n'
+    raw_triggers = raw_triggers
+    # regexp takes beginnig of string, than some a-zA-Z0-9_ symbols tnan spaces, than [guard] then /
+    trigger_regexp: str = r"^\w+ *(\[.+?\])?/"
     trigger_list = re.findall(trigger_regexp, raw_triggers)
     trigger_data = re.split(trigger_regexp, raw_triggers)
     triggers: Dict[str, str] = dict(list(zip(trigger_list, trigger_data[1:])))
     actions: List[Trigger] = list()
     for (trigger_id, (trigger, action)) in enumerate(triggers.items(), start=1):
         guard: str = ""
-        trigger_name: str = trigger[:-2].strip()
+        i = trigger.index(r'/')
+        trigger_name: str = trigger[:i].strip()
         if '[' in trigger_name:
             guard_regexp: str = r"\[.*\]"
             res = re.search(guard_regexp, trigger_name)
@@ -122,8 +125,8 @@ def create_state_from_node(node: dict, node_type: str, min_x: int, min_y: int, s
     actions: str = get_state_actions(node) if node_type == 'state' else get_group_actions(node)
     node_id = node['id']
     (triggers, player_signal) = create_actions(actions, node_id, player_signal)
-    state_entry: List[str] = str([trig.action for trig in triggers if trig.name == 'entry'])
-    state_exit: List[str] = str([trig.action for trig in triggers if trig.name == 'exit'])
+    state_entry: List[str] = [trig.action for trig in triggers if trig.name == 'entry']
+    state_exit: List[str] = [trig.action for trig in triggers if trig.name == 'exit']
     state_entry_str: str = '#ifdef DESKTOP\n    printf("Entered state %s");\n#endif /* def DESKTOP */' % name
     state_entry += state_entry[0] if state_entry else ""
     state_exit_str: str = '#ifdef DESKTOP\n    printf("Exited state %s");\n#endif /* def DESKTOP */' % name
