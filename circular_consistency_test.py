@@ -36,7 +36,7 @@ def getQmBinary():
 
 
 # Does full conversion cycle (C++ --> graphml --> qm --> C++)
-# @pytest.mark.skipif(sys.platform != "win32", reason="not yes sure how to install QM on other systems")
+@pytest.mark.skipif(sys.platform != "win32", reason="not yes sure how to install QM on other systems")
 class CircularConsistencyTest(unittest.TestCase):
     def removeOutputFolder(self):
         if (os.path.exists('testdata/test_output')):
