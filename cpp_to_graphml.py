@@ -64,12 +64,11 @@ class ParsingContext:
 
 
 class StateMachineParser:
-    result: StateMachine = StateMachine()
-
     def __init__(self, file_path: str):
         translationUnit = clang_index.parse(file_path)
         self.ctx = ParsingContext(file_path)
         self.root_node = translationUnit.cursor
+        self.result = StateMachine()
 
     def Parse(self):
         self._TraverseAST(self.root_node)
@@ -101,8 +100,6 @@ class StateMachineParser:
                 not node.spelling.endswith('_ctor'))
 
 class StateParser:
-    result: State
-
     def __init__(self, ctx: ParsingContext, root_node):
         self.ctx = ctx
         self.root_node = root_node
@@ -171,7 +168,7 @@ class StateParser:
 
 
 class EventHandlerParser:
-    handlers: List[EventHandler] = []
+    handlers: List[EventHandler]
     root_node: clang.cindex.Cursor
     event_type: str
     state_from: str
@@ -185,6 +182,7 @@ class EventHandlerParser:
         # | | `-DeclRefExpr 0x7ffff3a83dc0 <col:14> 'PlayerSignals' EnumConstant 0x7ffff3a28b28 'PILL_RESET_SIG' 'PlayerSignals'
         # | `-CompoundStmt 0x7ffff3a84318 <col:30, line:593:9>
         children = list(root_node.get_children())
+        self.handlers = []
         self.event_type = list(children[0].get_children())[0].spelling
         self.root_node = children[1]
         assert self.root_node.kind == clang.cindex.CursorKind.COMPOUND_STMT, self.root_node.kind
@@ -248,7 +246,7 @@ class EventHandlerParser:
 
 
 class StateMachineWriter:
-    state_name_to_node_name: Dict[str, str] = {}
+    state_name_to_node_name: Dict[str, str] = field(default_factory=dict)
     edge_id: int
 
     # TODO(aeremin) Pass some data object instead of whole StateMachineParser
@@ -307,8 +305,12 @@ class StateMachineWriter:
             event_type = h.event_type
             if event_type == 'Q_ENTRY_SIG':
                 event_type = 'entry'
-            if event_type == 'Q_EXIT_SIG':
+            elif event_type == 'Q_EXIT_SIG':
                 event_type = 'exit'
+            else:
+                assert event_type.endswith('_SIG')
+                event_type = event_type[:-len('_SIG')]
+
             state_content.append(
                 ('%s/' % event_type) + ('[%s]' % h.condition if h.condition else ''))
             for statement in h.statements:
