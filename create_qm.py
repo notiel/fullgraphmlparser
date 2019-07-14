@@ -635,9 +635,11 @@ def create_qm(qm_package: QMTag, modelname: str, start_state: str, start_action:
             for line in text.split('\n')[1:]:
                 update_event_fields(line, event_fields)
         if text.startswith("Code for h-file:"):
-            hcode = '\n'.join([s for s in text.split('\n')[1:] if s])
+            hcode = '\\\\Start of h code from diagram\n' + '\n'.join([s for s in text.split('\n')[1:] if s]) + \
+                    '\n\\\\End of h code from diagram\n'
         if text.startswith("Code for cpp-file:"):
-            cppcode = '\n'.join([s for s in text.split('\n')[1:] if s])
+            cppcode = '\\\\Start of c code from diagram\n'+'\n'.join([s for s in text.split('\n')[1:] if s])+\
+                      "\n\\\\End of c code from diagram\n"
         if text.startswith("Constructor code"):
             ctor_code = '\n'.join(text.split('\n')[1:])
         if text.startswith("Constructor fields"):
