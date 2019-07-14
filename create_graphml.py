@@ -355,7 +355,7 @@ def add_start_state(parent: Tag, node_id: str):
     data = xmltodict.parse(open(r'graphml_templates/start_template.xml').read())
     node = etree.SubElement(parent, "node", id=node_id)
     data_tag = etree.SubElement(node, "data", key="d6")
-    get_tags_from_template(data_tag, data)
+    get_tags_from_template(data_tag, data, "")
 
 
 def add_choice_state(parent: Tag, node_id: str):
@@ -368,11 +368,96 @@ def add_choice_state(parent: Tag, node_id: str):
     data = xmltodict.parse(open(r'graphml_templates/choice_template.xml').read())
     node = etree.SubElement(parent, "node", id=node_id)
     data_tag = etree.SubElement(node, "data", key="d6")
-    get_tags_from_template(data_tag, data)
+    get_tags_from_template(data_tag, data, "")
 
-def get_tags_from_template(parent: Tag, data: dict):
+
+def add_comment_state_with_text(parent: Tag, node_id: str, text: str):
     """
-    adda start state using template
+    adds comment node from template with added text to parent Node
+    :param parent: parent node
+    :param node_id: node id
+    :param text: text to add
+    :return:
+    """
+    data = xmltodict.parse(open(r'graphml_templates/comment_template.xml').read())
+    node = etree.SubElement(parent, "node", id=node_id)
+    data_tag = etree.SubElement(node, "data", key="d6")
+    node.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
+    get_tags_from_template(data_tag, data, text)
+
+
+def get_state_fields_comment(parent: Tag, node_id: str, text: str):
+    """
+    gets comment for state fields
+    :param node_id: od of node
+    :param parent: tag to add comment
+    :param text: text to add to states
+    :return:
+    """
+    add_comment_state_with_text(parent, node_id, "State fields: (do not delete this caption):\n" + text)
+
+
+def get_constructor_code_comment(parent: Tag, node_id: str,  text: str):
+    """
+    gets comment for constructor code
+    :param parent: tag to add comment
+    :param node_id: od of node
+    :param text: text to add to constructor code
+    :return:
+    """
+    add_comment_state_with_text(parent, node_id, "Constructor code: (do not delete this caption):\n" + text)
+
+
+def get_h_code_comment(parent: Tag, node_id: str,  text: str):
+    """
+    gets comment for code for h-file
+    :param parent: tag to add comment
+    :param node_id: od of node
+    :param text: text to add to h-file
+    :return:
+    """
+    add_comment_state_with_text(parent, node_id, "Code for h-file: (do not delete this caption):\n" + text)
+
+
+def get_c_code_comment(parent: Tag, node_id: str,  text: str):
+    """
+    gets comment for code for cpp-file
+    :param parent: tag to add comment
+    :param node_id: od of node
+    :param text: text to add to cpp-file
+    :return:
+    """
+    add_comment_state_with_text(parent, node_id, "Code for cpp-file: (do not delete this caption):\n" + text)
+
+
+def get_constructor_fields_comment(parent: Tag, node_id: str,  text: str):
+    """
+    gets comment for additional  constructor fields
+    :param parent: tag to add comment
+    :param node_id: od of node
+    :param text: list of constructor fields
+    :return:
+    """
+    add_comment_state_with_text(parent, node_id, "Constructor fields: (do not delete this caption):\n" + text)
+
+
+def get_event_fields_comment(parent: Tag, node_id: str,  text: str):
+    """
+    gets comment for additional event fields
+    :param parent: tag to add comment
+    :param node_id: od of node
+    :param text: list of event fields
+    :return:
+    """
+    add_comment_state_with_text(parent, node_id, "Event fields: (do not delete this caption):\n" + text)
+
+
+def get_tags_from_template(parent: Tag, data: dict, text: str):
+    """
+    gets tag structure from template and adds it to tag structure, adding text to nodelabel
+    :param parent: parent tag
+    :param data: data with tags template
+    :param text: text to add to node label
     :return:
     """
     for tag in data.keys():
@@ -380,11 +465,14 @@ def get_tags_from_template(parent: Tag, data: dict):
             attributes = {key.replace("@", ""): data[tag][key] for key in data[tag].keys() if
                           not isinstance(data[tag][key], dict) and not isinstance(data[tag][key], list)}
             new_tag = etree.SubElement(parent, etree.QName(namespace_dict['y'], tag.replace("y:", "")), **attributes)
-            get_tags_from_template(new_tag, data[tag])
+            if tag == 'y:NodeLabel':
+                new_tag.text = text
+
+            get_tags_from_template(new_tag, data[tag], text)
         if isinstance(data[tag], list):
             for i in range(len(data[tag])):
                 if isinstance(data[tag][i], dict):
-                    get_tags_from_template(parent, {tag: data[tag][i]})
+                    get_tags_from_template(parent, {tag: data[tag][i]}, text)
 
 
 def finish_graphml(root: Tag):
@@ -411,6 +499,12 @@ if __name__ == '__main__':
     add_edge(graph, "e2", "n1", "n3", "choice_trigger", 0, 0, 0, 0)
     add_edge(graph, "e3", "n3", "n0::n0", "guard1", 0, 0, 0, 0)
     add_edge(graph, "e4", "n3", "n0", "guard2", 0, 0, 0, 0)
+    get_c_code_comment(graph, "n4", "some code here")
+    get_constructor_code_comment(graph, 'n5', "me->test_field = test")
+    get_constructor_fields_comment(graph, 'n6', "unsigned int: test_constructor")
+    get_event_fields_comment(graph, 'n7', "unsigned int: test_event_field")
+    get_h_code_comment(graph, "n8", "some code for h file here")
+    get_state_fields_comment(graph, "n9", "unsigned int test_state_field")
     finish_graphml(root_node)
     xml_tree = etree.ElementTree(root_node)
     xml_tree.write("test.graphml", xml_declaration=True, pretty_print=True, encoding="UTF-8")

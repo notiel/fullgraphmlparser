@@ -110,6 +110,6 @@ class TriggersCreateTest(unittest.TestCase):
         self.assertEqual(res[1].guard, "else")
 
 
-    # def testNoTrigger(self):
-    #     res, _ = create_actions("a = b / c", "test", [])
-    #     self.assertEqual(len(res), 0)
+    def testNoTrigger(self):
+        res, _ = create_actions("a = b / c", "test", [])
+        self.assertEqual(len(res), 0)
