@@ -28,7 +28,7 @@ class StateMachineWriterTest(unittest.TestCase):
     def tearDown(self):
         self.removeOutputFile()
 
-    def testNumberOfStates(self):
+    def testValidGraphml(self):
         parser = cpp_to_graphml.StateMachineParser(cpp_file_path = './testdata/oregonPlayer.cpp')
         cpp_to_graphml.StateMachineWriter(parser.Parse()).WriteToFile(self.OUTPUT_FILE)
         output_file = Path(self.OUTPUT_FILE)
