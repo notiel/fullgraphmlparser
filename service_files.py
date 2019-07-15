@@ -25,7 +25,9 @@ def create_files(path: str, signals: List[str]):
     :return:
     """
     with open(os.path.join(path, "service.cpp"), "w") as f:
-        with open(r"templates\service_c.txt") as templ:
+        with open(r"templates/service_c.txt") as templ:
             keystrokes = create_keystrokes(signals)
             text = Template(templ.read()).substitute({"keystrokes": keystrokes})
             f.write(text)
+    with open(os.path.join(path, "cheetcodes.txt"), "w") as g:
+        g.write(keystrokes)
