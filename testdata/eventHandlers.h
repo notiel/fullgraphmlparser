@@ -3,8 +3,8 @@
 
 #include "stdio.h"
 #include "qhsm.h"
-#include "oregonPlayer.h"
 #include <stdbool.h>
+#include "oregonPlayer.h"
 
 
 //logic functions
