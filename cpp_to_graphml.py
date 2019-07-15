@@ -113,7 +113,8 @@ class HeaderParser:
             begin = None
             end = None
             for i, line in enumerate(lines):
-                if '//Start of h' in line:
+                # TODO: Deduplicate those lines with ones in create_qm.py
+                if '//Start of h code from diagram' in line:
                     begin = i + 1
                 if '//End of h code from diagram' in line:
                     end = i
