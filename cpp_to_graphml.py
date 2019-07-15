@@ -64,9 +64,9 @@ class ParsingContext:
 
 
 class StateMachineParser:
-    def __init__(self, file_path: str):
-        translationUnit = clang_index.parse(file_path)
-        self.ctx = ParsingContext(file_path)
+    def __init__(self, cpp_file_path: str):
+        translationUnit = clang_index.parse(cpp_file_path)
+        self.ctx = ParsingContext(cpp_file_path)
         self.root_node = translationUnit.cursor
         self.result = StateMachine()
 

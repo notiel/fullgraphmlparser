@@ -45,14 +45,14 @@ class CircularConsistencyTest(unittest.TestCase):
        self.removeOutputFolder()
 
     def testFullCycle(self):
-        parser = cpp_to_graphml.StateMachineParser(file_path = './testdata/oregonPlayer.cpp')
+        parser = cpp_to_graphml.StateMachineParser(cpp_file_path = './testdata/oregonPlayer.cpp')
         sm1 = parser.Parse()
         cpp_to_graphml.StateMachineWriter(sm1).WriteToFile('./testdata/test_output/oregonPlayer.graphml')
         graphmltoqm.main('./testdata/test_output/oregonPlayer')
         shutil.copy('./testdata/qhsm.h', './testdata/test_output')
         shutil.copy('./testdata/eventHandlers.h', './testdata/test_output')
         subprocess.run(getQmWithArgs() + ['./testdata/test_output/oregonPlayer.qm', '-c'], check=True, timeout=10)
-        parser2 = cpp_to_graphml.StateMachineParser(file_path = './testdata/test_output/oregonPlayer.cpp')
+        parser2 = cpp_to_graphml.StateMachineParser(cpp_file_path = './testdata/test_output/oregonPlayer.cpp')
         sm2 = parser2.Parse()
 
         self.assertEqual(len(sm1.states), len(sm2.states))

@@ -12,7 +12,7 @@ import cpp_to_graphml
 class StateMachineParserTest(unittest.TestCase):
 
     def testNumberOfStates(self):
-        parser = cpp_to_graphml.StateMachineParser(file_path = './testdata/oregonPlayer.cpp')
+        parser = cpp_to_graphml.StateMachineParser(cpp_file_path = './testdata/oregonPlayer.cpp')
         sm = parser.Parse()
         self.assertEqual(len(sm.states), 15)
 
@@ -29,7 +29,7 @@ class StateMachineWriterTest(unittest.TestCase):
         self.removeOutputFile()
 
     def testNumberOfStates(self):
-        parser = cpp_to_graphml.StateMachineParser(file_path = './testdata/oregonPlayer.cpp')
+        parser = cpp_to_graphml.StateMachineParser(cpp_file_path = './testdata/oregonPlayer.cpp')
         cpp_to_graphml.StateMachineWriter(parser.Parse()).WriteToFile(self.OUTPUT_FILE)
         output_file = Path(self.OUTPUT_FILE)
         # Test that output file is present ...
