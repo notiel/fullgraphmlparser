@@ -146,6 +146,11 @@ class HeaderParser:
                 if attributes and attributes[0].type.spelling == 'QHsm':
                     self.result.state_fields = '\n'.join([self.ctx.GetNodeText(attr) for attr in attributes[1:]])
 
+            if node.kind == clang.cindex.CursorKind.FUNCTION_DECL and node.spelling == self.ctx.state_machine_name + '_ctor':
+                # In function declaration last symbol is either ',' or '
+                convert = lambda attr: '%s %s;' % (attr.type.spelling, attr.spelling)
+                self.result.constructor_fields = '\n'.join([convert(attr) for attr in node.get_children()])
+
         return self.result
 
     def _ExtractHCode(self):

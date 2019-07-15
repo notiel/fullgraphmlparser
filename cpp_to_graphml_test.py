@@ -27,7 +27,9 @@ class StateMachineParserTest(unittest.TestCase):
         self.assertEqual(sm.state_fields, '''unsigned int CharHP;
 QStateHandler StartState;
 unsigned int TimerAgony;''')
-
+        self.assertEqual(sm.constructor_fields, '''unsigned int HP;
+unsigned int State;
+unsigned int TimerAgony;''')
 
 class StateMachineWriterTest(unittest.TestCase):
     OUTPUT_FILE = './testdata/output.graphml'
