@@ -138,10 +138,13 @@ class HeaderParser:
         self._ExtractHCode()
         for node in self.root_node.get_children():
             if node.kind == clang.cindex.CursorKind.STRUCT_DECL:
+                attributes = list(node.get_children())
                 if node.displayname == self.ctx.CamelCaseStateMachinName() + 'QEvt':
-                    attributes = list(node.get_children())
                     assert self.ctx.GetNodeText(attributes[0]) == 'QEvt super;'
                     self.result.event_fields = '\n'.join([self.ctx.GetNodeText(attr) for attr in attributes[1:]])
+
+                if attributes and attributes[0].type.spelling == 'QHsm':
+                    self.result.state_fields = '\n'.join([self.ctx.GetNodeText(attr) for attr in attributes[1:]])
 
         return self.result
 
