@@ -42,17 +42,19 @@ class State:
 @dataclass
 class StateMachine:
     # TODO: Add constructors and other stuff
+    raw_h_code: str = ''
     states: Dict[str, State] = field(default_factory=dict)
 
 class ParsingContext:
     state_machine_name: str
-
+    cpp_file_path: str
     _file_content: str
 
-    def __init__(self, file_path: str):
-        filename = os.path.splitext(os.path.basename(file_path))[0]
+    def __init__(self, cpp_file_path: str):
+        filename = os.path.splitext(os.path.basename(cpp_file_path))[0]
         self.state_machine_name = filename[:1].upper() + filename[1:]
-        with open(file_path, 'r', newline='') as f:
+        self.cpp_file_path = cpp_file_path
+        with open(cpp_file_path, 'r', newline='') as f:
             self._file_content = ''.join(f.readlines())
 
     def GetNodeText(self, node: clang.cindex.Cursor) -> str:
@@ -71,6 +73,8 @@ class StateMachineParser:
         self.result = StateMachine()
 
     def Parse(self):
+        h_file_path = os.path.splitext(self.ctx.cpp_file_path)[0]+'.h'
+        self.result.raw_h_code = HeaderParser(h_file_path).Parse()
         self._TraverseAST(self.root_node)
         self._UpdateChilds()
         return self.result
@@ -98,6 +102,22 @@ class StateMachineParser:
         return (node.kind == clang.cindex.CursorKind.FUNCTION_DECL and
                 node.spelling.startswith(self.ctx.state_machine_name + '_') and
                 not node.spelling.endswith('_ctor'))
+
+class HeaderParser:
+    def __init__(self, header_file_path: str):
+        self.header_file_path = header_file_path
+
+    def Parse(self) -> str:
+        with open(self.header_file_path, 'r') as f:
+            lines = f.readlines()
+            begin = None
+            end = None
+            for i, line in enumerate(lines):
+                if '//Start of h' in line:
+                    begin = i + 1
+                if '//End of h code from diagram' in line:
+                    end = i
+            return ''.join(lines[begin:end]) if (begin and end) else ''
 
 class StateParser:
     def __init__(self, ctx: ParsingContext, root_node):

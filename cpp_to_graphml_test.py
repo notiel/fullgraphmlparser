@@ -16,6 +16,13 @@ class StateMachineParserTest(unittest.TestCase):
         sm = parser.Parse()
         self.assertEqual(len(sm.states), 15)
 
+    def testHeaderParsed(self):
+        parser = cpp_to_graphml.StateMachineParser(cpp_file_path = './testdata/oregonPlayer.cpp')
+        sm = parser.Parse()
+        self.assertTrue(sm.raw_h_code)
+        self.assertTrue(sm.raw_h_code.startswith('#define'))
+        self.assertTrue(sm.raw_h_code.endswith('(DEFAULT_HP/3)\n'))
+
 class StateMachineWriterTest(unittest.TestCase):
     OUTPUT_FILE = './testdata/output.graphml'
     def removeOutputFile(self):
