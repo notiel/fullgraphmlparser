@@ -23,6 +23,8 @@ class StateMachineParserTest(unittest.TestCase):
         self.assertTrue(sm.raw_h_code.startswith('#define'))
         self.assertTrue(sm.raw_h_code.endswith('(DEFAULT_HP/3)\n'))
 
+        self.assertEqual(sm.event_fields, 'unsigned int value;')
+
 class StateMachineWriterTest(unittest.TestCase):
     OUTPUT_FILE = './testdata/output.graphml'
     def removeOutputFile(self):

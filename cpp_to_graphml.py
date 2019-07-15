@@ -74,6 +74,9 @@ class ParsingContext:
     def RemoveStateMachinNamePrefix(self, s: str) -> str:
         return s[(len(self.state_machine_name) + 1):]
 
+    def CamelCaseStateMachinName(self) -> str:
+        return self.state_machine_name[0].lower() + self.state_machine_name[1:]
+
 
 class StateMachineParser:
     def __init__(self, cpp_file_path: str):
@@ -127,8 +130,22 @@ class CppParser:
 class HeaderParser:
     def __init__(self, header_file_path: str):
         self.header_file_path = header_file_path
+        self.ctx = ParsingContext(header_file_path)
+        self.root_node = clang_index.parse(header_file_path).cursor
+        self.result = StateMachineHeader()
 
     def Parse(self) -> str:
+        self._ExtractHCode()
+        for node in self.root_node.get_children():
+            if node.kind == clang.cindex.CursorKind.STRUCT_DECL:
+                if node.displayname == self.ctx.CamelCaseStateMachinName() + 'QEvt':
+                    attributes = list(node.get_children())
+                    assert self.ctx.GetNodeText(attributes[0]) == 'QEvt super;'
+                    self.result.event_fields = '\n'.join([self.ctx.GetNodeText(attr) for attr in attributes[1:]])
+
+        return self.result
+
+    def _ExtractHCode(self):
         with open(self.header_file_path, 'r') as f:
             lines = f.readlines()
             begin = None
@@ -139,7 +156,7 @@ class HeaderParser:
                     begin = i + 1
                 if '//End of h code from diagram' in line:
                     end = i
-            return StateMachineHeader(raw_h_code=(''.join(lines[begin:end]) if (begin and end) else ''))
+            self.result.raw_h_code =  ''.join(lines[begin:end]) if (begin and end) else ''
 
 class StateParser:
     def __init__(self, ctx: ParsingContext, root_node):
