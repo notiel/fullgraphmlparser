@@ -40,21 +40,31 @@ class State:
     child_states: List['State'] = field(default_factory=list)
 
 @dataclass
-class StateMachine:
-    # TODO: Add constructors and other stuff
-    raw_h_code: str = ''
+class StateMachineCpp:
+    constructor_code: str = ''
     states: Dict[str, State] = field(default_factory=dict)
+
+@dataclass
+class StateMachineHeader:
+    raw_h_code: str = ''
+    state_fields: str = ''
+    event_fields: str = ''
+    constructor_fields: str = ''
+
+@dataclass
+class StateMachine(StateMachineCpp, StateMachineHeader):
+    pass
 
 class ParsingContext:
     state_machine_name: str
-    cpp_file_path: str
+    file_path: str
     _file_content: str
 
-    def __init__(self, cpp_file_path: str):
-        filename = os.path.splitext(os.path.basename(cpp_file_path))[0]
+    def __init__(self, file_path: str):
+        filename = os.path.splitext(os.path.basename(file_path))[0]
         self.state_machine_name = filename[:1].upper() + filename[1:]
-        self.cpp_file_path = cpp_file_path
-        with open(cpp_file_path, 'r', newline='') as f:
+        self.file_path = file_path
+        with open(file_path, 'r', newline='') as f:
             self._file_content = ''.join(f.readlines())
 
     def GetNodeText(self, node: clang.cindex.Cursor) -> str:
@@ -67,14 +77,24 @@ class ParsingContext:
 
 class StateMachineParser:
     def __init__(self, cpp_file_path: str):
+        self.cpp_parser = CppParser(cpp_file_path = cpp_file_path)
+        self.header_parser = HeaderParser(header_file_path = os.path.splitext(cpp_file_path)[0]+'.h')
+
+    def Parse(self):
+        cpp_parse_result = self.cpp_parser.Parse()
+        header_parse_result = self.header_parser.Parse()
+        return StateMachine(constructor_code=cpp_parse_result.constructor_code, states=cpp_parse_result.states,
+                            raw_h_code=header_parse_result.raw_h_code, state_fields=header_parse_result.state_fields,
+                            event_fields=header_parse_result.event_fields, constructor_fields=header_parse_result.constructor_fields)
+
+class CppParser:
+    def __init__(self, cpp_file_path: str):
         translationUnit = clang_index.parse(cpp_file_path)
         self.ctx = ParsingContext(cpp_file_path)
         self.root_node = translationUnit.cursor
-        self.result = StateMachine()
+        self.result = StateMachineCpp()
 
-    def Parse(self):
-        h_file_path = os.path.splitext(self.ctx.cpp_file_path)[0]+'.h'
-        self.result.raw_h_code = HeaderParser(h_file_path).Parse()
+    def Parse(self) -> StateMachineCpp:
         self._TraverseAST(self.root_node)
         self._UpdateChilds()
         return self.result
@@ -103,6 +123,7 @@ class StateMachineParser:
                 node.spelling.startswith(self.ctx.state_machine_name + '_') and
                 not node.spelling.endswith('_ctor'))
 
+
 class HeaderParser:
     def __init__(self, header_file_path: str):
         self.header_file_path = header_file_path
@@ -118,7 +139,7 @@ class HeaderParser:
                     begin = i + 1
                 if '//End of h code from diagram' in line:
                     end = i
-            return ''.join(lines[begin:end]) if (begin and end) else ''
+            return StateMachineHeader(raw_h_code=(''.join(lines[begin:end]) if (begin and end) else ''))
 
 class StateParser:
     def __init__(self, ctx: ParsingContext, root_node):
