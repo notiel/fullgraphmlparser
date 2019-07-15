@@ -2,6 +2,7 @@ import xmltodict
 import qm
 import graphml as gr
 import create_qm as cr
+import service_files
 from logger import logging
 import sys
 import os
@@ -59,6 +60,7 @@ def main(filenames: Union[List[str], str]):
                      ctor_code, ctor_fields)
     except PermissionError:
         logging.fatal("File already exists and is locked")
+    service_files.create_files(os.path.dirname(filenames[0]), player_signal)
 
 
 if __name__ == '__main__':

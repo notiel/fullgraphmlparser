@@ -430,7 +430,7 @@ def get_else_trig(trig: Trigger, states: [State]) -> Optional[Trigger]:
     """
     parent_state = get_state_by_id(states, trig.source, 'old')
     for child_trig in parent_state.trigs:
-        if child_trig.type == 'internal' and child_trig.guard == 'else' and child_trig.name == trig.name:
+        if child_trig.guard == 'else' and child_trig.name == trig.name:
             return child_trig
     return None
 
@@ -635,11 +635,11 @@ def create_qm(qm_package: QMTag, modelname: str, start_state: str, start_action:
             for line in text.split('\n')[1:]:
                 update_event_fields(line, event_fields)
         if text.startswith("Code for h-file:"):
-            hcode = '\\\\Start of h code from diagram\n' + '\n'.join([s for s in text.split('\n')[1:] if s]) + \
-                    '\n\\\\End of h code from diagram\n'
+            hcode = '\n//Start of h code from diagram\n' + '\n'.join([s for s in text.split('\n')[1:] if s]) + \
+                    '\n//End of h code from diagram\n'
         if text.startswith("Code for cpp-file:"):
-            cppcode = '\\\\Start of c code from diagram\n'+'\n'.join([s for s in text.split('\n')[1:] if s])+\
-                      "\n\\\\End of c code from diagram\n"
+            cppcode = '\n//Start of c code from diagram\n'+'\n'.join([s for s in text.split('\n')[1:] if s])+\
+                      "\n//End of c code from diagram\n"
         if text.startswith("Constructor code"):
             ctor_code = '\n'.join(text.split('\n')[1:])
         if text.startswith("Constructor fields"):
