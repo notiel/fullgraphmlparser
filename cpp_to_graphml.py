@@ -120,7 +120,9 @@ class CppParser:
         if self._IsCtorFunction(node):
             for childNode in node.get_children():
                 if childNode.kind == clang.cindex.CursorKind.COMPOUND_STMT:
-                    self.result.constructor_code = '\n'.join(self.ctx.GetNodeText(childChildNode) for childChildNode in childNode.get_children())
+                    constructor_statements = [self.ctx.GetNodeText(childChildNode) for childChildNode in childNode.get_children()]
+                    # We skip the very first statement as it always 'OregonPlayer *me = &oregonPlayer;' which added automatically
+                    self.result.constructor_code = '\n'.join(constructor_statements[1:])
                     break
 
         for childNode in node.get_children():
@@ -354,6 +356,12 @@ class StateMachineWriter:
                 if h.state_from == h.state_to:
                     continue
                 self._OutputEdge(h)
+
+        create_graphml.get_constructor_code_comment(self.graph, 'constructor_code', self.state_machine.constructor_code)
+        create_graphml.get_constructor_fields_comment(self.graph, 'constructor_fields', self.state_machine.constructor_fields)
+        create_graphml.get_event_fields_comment(self.graph, 'event_fields', self.state_machine.event_fields)
+        create_graphml.get_h_code_comment(self.graph, "raw_h_code", self.state_machine.raw_h_code)
+        create_graphml.get_state_fields_comment(self.graph, "state_fields", self.state_machine.state_fields)
 
         create_graphml.finish_graphml(graphml_root_node)
         xml_tree = etree.ElementTree(graphml_root_node)

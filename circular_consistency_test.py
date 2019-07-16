@@ -56,6 +56,11 @@ class CircularConsistencyTest(unittest.TestCase):
         sm2 = parser2.Parse()
 
         self.assertEqual(len(sm1.states), len(sm2.states))
+        self.assertEqual(sm1.state_fields, sm2.state_fields)
+        self.assertEqual(sm1.event_fields, sm2.event_fields)
+        self.assertEqual(sm1.constructor_fields, sm2.constructor_fields)
+        #self.assertEqual(sm1.constructor_code, sm2.constructor_code)
+        self.assertEqual(sm1.raw_h_code, sm2.raw_h_code)
         for state_name in sorted(sm1.states.keys()):
             s1 = sm1.states[state_name]
             self.assertIn(state_name, sm2.states)
