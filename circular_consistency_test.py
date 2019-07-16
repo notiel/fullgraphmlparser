@@ -41,8 +41,8 @@ class CircularConsistencyTest(unittest.TestCase):
         self.removeOutputFolder()
         os.makedirs('./testdata/test_output')
 
-    def tearDown(self):
-       self.removeOutputFolder()
+    #def tearDown(self):
+    #   self.removeOutputFolder()
 
     def testFullCycle(self):
         parser = cpp_to_graphml.StateMachineParser(cpp_file_path = './testdata/oregonPlayer.cpp')
@@ -67,7 +67,7 @@ class CircularConsistencyTest(unittest.TestCase):
             s2 = sm2.states[state_name]
             self.assertEqual(s1.state_name, s2.state_name)
             # TODO(aeremin) Fix problems and re-enable assertions
-            # self.assertEqual(s1.parent_state_name, s2.parent_state_name)
+            self.assertEqual(s1.parent_state_name, s2.parent_state_name)
             def names(state_list):
                 return [s.state_name for s in state_list]
             # self.assertEqual(names(s1.child_states), names(s2.child_states))
