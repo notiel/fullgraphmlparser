@@ -370,7 +370,7 @@ def is_state_a_child_by_label(parent: State, label: str)-> bool:
     :return: is a  child?
     """
     pass
-    return parent.id in label
+    return label.startswith(parent.id)
 
 
 def get_parent_by_label(label: str, states: List[State]) -> State:
