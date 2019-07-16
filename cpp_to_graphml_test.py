@@ -31,6 +31,10 @@ unsigned int TimerAgony;''')
 unsigned int State;
 unsigned int TimerAgony;''')
 
+        self.assertTrue(sm.constructor_code)
+        self.assertTrue(sm.constructor_code.startswith('OregonPlayer *me = &oregonPlayer;'), sm.constructor_code)
+        self.assertTrue(sm.constructor_code.endswith('QHsm_ctor(&me->super, Q_STATE_CAST(&OregonPlayer_initial));'))
+
 class StateMachineWriterTest(unittest.TestCase):
     OUTPUT_FILE = './testdata/output.graphml'
     def removeOutputFile(self):

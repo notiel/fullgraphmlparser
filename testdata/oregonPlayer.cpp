@@ -73,7 +73,7 @@ void OregonPlayer_ctor(
                    me->StartState =(QStateHandler)& OregonPlayer_healthy;
            }
     QHsm_ctor(&me->super, Q_STATE_CAST(&OregonPlayer_initial));
-     QHsm_ctor(&me->super, Q_STATE_CAST(&OregonPlayer_initial));
+    QHsm_ctor(&me->super, Q_STATE_CAST(&OregonPlayer_initial));
 }
 
 #if ((QP_VERSION < 591) || (QP_VERSION != ((QP_RELEASE^4294967295U) % 0x3E8)))

@@ -117,11 +117,21 @@ class CppParser:
 # name = %s, parent = %s, handlers = %s
 #            ''' % (state.state_name, state.parent_state_name, state.handlers.keys()))
 
+        if self._IsCtorFunction(node):
+            for childNode in node.get_children():
+                if childNode.kind == clang.cindex.CursorKind.COMPOUND_STMT:
+                    self.result.constructor_code = '\n'.join(self.ctx.GetNodeText(childChildNode) for childChildNode in childNode.get_children())
+                    break
+
         for childNode in node.get_children():
             self._TraverseAST(childNode)
 
+    def _IsCtorFunction(self, node):
+        return (node.kind == clang.cindex.CursorKind.FUNCTION_DECL and
+                node.spelling == self.ctx.state_machine_name + '_ctor')
+
+
     def _IsStateFunction(self, node):
-        # and node.spelling.startswith('OregonPlayer_dead')
         return (node.kind == clang.cindex.CursorKind.FUNCTION_DECL and
                 node.spelling.startswith(self.ctx.state_machine_name + '_') and
                 not node.spelling.endswith('_ctor'))
