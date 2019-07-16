@@ -384,7 +384,8 @@ def get_parent_by_label(label: str, states: List[State]) -> State:
     if not parents:
         return None
     parents.sort(key=lambda st: len(st.id))
-    return parents[0]
+    parent = parents[0] if (len(parents) == 1) else parents[1]
+    return parent
 
 
 def get_parent(child: State, states: [State]) -> Optional[State]:
