@@ -136,7 +136,7 @@ def create_state_from_node(node: dict, node_type: str, min_x: int, min_y: int, s
     y = y // divider - min_y // divider + 2
     width: int = width // divider
     height: int = height // divider
-    parent: State = get_parent_by_coord(x, y, width, height, states)
+    parent: State = get_parent_by_label(node_id, states)
     new_id: List[str] = [(parent.new_id[0] + "/" + str(len(parent.childs) + len(parent.trigs)))]
     state: State = State(name=name, type=node_type, id=node_id, new_id=new_id, actions=actions,
                          entry=state_entry_str, exit=state_exit_str, trigs=triggers, x=x,
@@ -159,7 +159,7 @@ def create_choice_from_node(node: dict, min_x: int, min_y: int, states: [State])
     y: int = y // divider - min_y // divider + 1
     width: int = width // divider
     height: int = height // divider
-    parent: State = get_parent_by_coord(x, y, width, height, states)
+    parent: State = get_parent_by_label(node_id, states)
     new_id: List[str] = [parent.new_id[0] + "/" + str(len(parent.childs) + len(parent.trigs))]
     state: State = State(name=get_state_label(node), type="choice", id=node_id, new_id=new_id, actions="",
                          entry="", exit="", trigs=[], x=x, y=y,
@@ -174,7 +174,7 @@ def create_global_state(w: int, h: int) -> State:
     :param h: height of all states
     :return: global parent state
     """
-    state = State(name="global", type="group", id="global", new_id=["1"], actions="",
+    state = State(name="global", type="group", id="", new_id=["1"], actions="",
                   entry="", exit="", trigs=[],
                   x=1, y=1, width=w // divider + global_w_delta, height=h // divider + global_h_delta, parent=None,
                   childs=[])
@@ -277,7 +277,7 @@ def create_terminate_state(states: [State]) -> State:
     :param states: list of states
     :return: global parent state
     """
-    global_state: State = get_state_by_id(states, 'global', 'old')
+    global_state: State = get_state_by_id(states, '', 'old')
     state: State = State(name="final?def DESKTOP", type="state", id="last", new_id=["2"], actions="",
                          entry="""printf("\nBye! Bye!\n"); exit(0);""", exit="", trigs=[],
                          x=global_state.x + global_state.width // 2 - terminal_w // 2,
@@ -288,7 +288,7 @@ def create_terminate_state(states: [State]) -> State:
 
 def add_terminal_trigger(states):
     terminate: State = get_state_by_id(states, "last", "old")
-    first: State = get_state_by_id(states, "global", "old")
+    first: State = get_state_by_id(states, "", "old")
     trigger: Trigger = Trigger(name="TERMINATE?def DESKTOP", type="external", guard="", source=first.id,
                                target=terminate.id, action="", id=0, x=0, y=first.height // 2,
                                dx=0, dy=-terminal_h // 2, points=[], action_x=-5, action_y=2, action_width=10)
@@ -362,6 +362,31 @@ def is_state_a_child_by_coord(x, y, width, height, parent: State) -> bool:
     return False
 
 
+def is_state_a_child_by_label(parent: State, label: str)-> bool:
+    """
+    ckecks if parent state is really parent for child state
+    :param parent: is a parent state?
+    :param child: child label
+    :return: is a  child?
+    """
+    pass
+    return parent.id in label
+
+
+def get_parent_by_label(label: str, states: List[State]) -> State:
+    """
+    gets nearest parent using node id
+    :param child: child label
+    :param states: list of States
+    :return:
+    """
+    parents: List[State] = [state for state in states if is_state_a_child_by_label(state, label)]
+    if not parents:
+        return None
+    parents.sort(key=lambda st: len(st.id))
+    return parents[0]
+
+
 def get_parent(child: State, states: [State]) -> Optional[State]:
     """
     gets id of parent of a child
@@ -419,7 +444,7 @@ def get_path(state1: str, state2: str, states) -> str:
     """
     state1 = get_state_by_id(states, state1, "old")
     state2 = get_state_by_id(states, state2, "old")
-    if state1.id == "global" and state2.id == "last":
+    if state1.id == "" and state2.id == "last":
         return "../../2"
     if state1 == state2:
         return ".."

@@ -33,6 +33,7 @@ def main(filenames: Union[List[str], str]):
         flat_nodes = gr.get_flat_nodes(data)
         state_nodes = [node for node in flat_nodes if
                        gr.is_node_a_state(node) or gr.is_node_a_choice(node) or gr.is_node_a_group(node)]
+        state_nodes.sort(key=lambda st : len(st['id']))
         gr.update_qroup_nodes(state_nodes)
         state_nodes.sort(key=gr.coord_sort)
 
