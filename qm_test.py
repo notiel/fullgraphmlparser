@@ -113,3 +113,6 @@ class TriggersCreateTest(unittest.TestCase):
     def testNoTrigger(self):
         res, _ = create_actions("a = b / c", "test", [])
         self.assertEqual(len(res), 0)
+
+if __name__ == '__main__':
+    unittest.main()
