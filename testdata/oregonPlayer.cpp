@@ -81,7 +81,6 @@ void OregonPlayer_ctor(
                    me->StartState =(QStateHandler)& OregonPlayer_healthy;
            }
     QHsm_ctor(&me->super, Q_STATE_CAST(&OregonPlayer_initial));
-     QHsm_ctor(&me->super, Q_STATE_CAST(&OregonPlayer_initial));
 }
 /*$enddef${SMs::OregonPlayer_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 /*$define${SMs::OregonPlayer} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/

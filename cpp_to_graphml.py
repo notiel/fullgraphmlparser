@@ -122,7 +122,8 @@ class CppParser:
                 if childNode.kind == clang.cindex.CursorKind.COMPOUND_STMT:
                     constructor_statements = [self.ctx.GetNodeText(childChildNode) for childChildNode in childNode.get_children()]
                     # We skip the very first statement as it always 'OregonPlayer *me = &oregonPlayer;' which added automatically
-                    self.result.constructor_code = '\n'.join(constructor_statements[1:])
+                    # We also skip the last as it's parent constructor call which is also added automatically
+                    self.result.constructor_code = '\n'.join(constructor_statements[1:-1])
                     break
 
         for childNode in node.get_children():
