@@ -365,7 +365,7 @@ QState OregonPlayer_agony(OregonPlayer * const me, QEvt const * const e) {
             /*${SMs::OregonPlayer::SM::global::active::alive::agony::TIME_TICK_1S::[else]} */
             else {
                 me->TimerAgony++;
-                    Flash(RED, 0, 0, FLASH_MS);
+                Flash(RED, 0, 0, FLASH_MS);
                 status_ = Q_HANDLED();
             }
             break;
@@ -550,7 +550,7 @@ QState OregonPlayer_dead(OregonPlayer * const me, QEvt const * const e) {
         /*${SMs::OregonPlayer::SM::global::active::dead::TIME_TICK_1M} */
         case TIME_TICK_1M_SIG: {
             BeepForPeriod(SHORT_BEEP_MS);
-                Flash(255, 0, 0, FLASH_1M);
+            Flash(255, 0, 0, FLASH_1M);
             status_ = Q_HANDLED();
             break;
         }
@@ -584,7 +584,7 @@ QState OregonPlayer_test(OregonPlayer * const me, QEvt const * const e) {
         /*${SMs::OregonPlayer::SM::global::test::RAD_RCVD} */
         case RAD_RCVD_SIG: {
             BeepForPeriod(SHORT_BEEP_MS);
-              Flash(127, 0, 0, FLASH_MS);
+            Flash(127, 0, 0, FLASH_MS);
             status_ = Q_HANDLED();
             break;
         }
