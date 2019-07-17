@@ -62,13 +62,13 @@ def create_actions(raw_triggers: str, source: str, player_signal: [str]) -> [Tri
     Example:
         >>>create_actions("entry/
                            BUTTON2_PRESSED/
-                           flash(get_color(rgb_table));
-                           play_sound(get_random_sound(BLASTER));
+                             flash(get_color(rgb_table));
+                             play_sound(get_random_sound(BLASTER));
                            BUTTON2_PRESSED_FOR_THREE_SECOND/
-                           play_sound(get_random_sound(FORCE);
+                             play_sound(get_random_sound(FORCE);
                            BOTH_BUTTONS_PRESSED/
-                           change_color(get_color(rgb_table));
-                           play_sound(get_sound(BOOT), 5);")
+                             change_color(get_color(rgb_table));
+                             play_sound(get_sound(BOOT), 5);")
 
         [Trigger(name="BUTTON2_PRESSED", action="flash(get_color(rgb_table));
                                                 play_sound(get_random_sound(BLASTER));", source=5)
@@ -100,7 +100,13 @@ def create_actions(raw_triggers: str, source: str, player_signal: [str]) -> [Tri
 
         if trigger_name not in player_signal and trigger_name and trigger_name != "entry" and trigger_name != 'exit':
             player_signal.append(trigger_name)
-        actions.append(Trigger(name=trigger_name, action=action.strip(), source=source, type="internal", guard=guard,
+        # Un-indent each line in the (potentially multiline) action by the indent of the first line.
+        lines = action.split('\n')[1:] # discard 0, as 0-th line is the whitespace after 'SOME_SIG/'
+        if lines:
+            indent = len(lines[0]) - len(lines[0].lstrip())
+            action = '\n'.join(line[indent:] for line in lines)
+            action = action.rstrip()
+        actions.append(Trigger(name=trigger_name, action=action, source=source, type="internal", guard=guard,
                                target="", id=trigger_id, x=0, y=internal_trigger_height * trigger_id,
                                dx=len(trigger_name) + internal_trigger_delta, dy=0, points=[], action_x=0,
                                action_y=5 * trigger_id - 2,

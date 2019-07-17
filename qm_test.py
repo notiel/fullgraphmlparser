@@ -75,6 +75,7 @@ class TriggersCreateTest(unittest.TestCase):
                             TIME_TICK_10S/
                                 BeepForPeriod(SHORT_BEEP_MS);""", "test", [])
 
+        self.assertEqual(res[1].action, 'me->TimerAgony++;\nFlash(RED, 0, 0, FLASH_MS);')
         self.assertEqual(res[2].action, 'BeepForPeriod(SHORT_BEEP_MS);')
 
     def testGuard(self):
