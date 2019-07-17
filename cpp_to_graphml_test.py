@@ -33,7 +33,7 @@ unsigned int TimerAgony;''')
 
         self.assertTrue(sm.constructor_code)
         self.assertTrue(sm.constructor_code.startswith('me->CharHP = HP;'), sm.constructor_code)
-        self.assertTrue(sm.constructor_code.endswith('}\r') or sm.constructor_code.endswith('}\n') or sm.constructor_code.endswith('}'))
+        self.assertTrue(sm.constructor_code.endswith('}'))
 
 class StateMachineWriterTest(unittest.TestCase):
     OUTPUT_FILE = './testdata/output.graphml'

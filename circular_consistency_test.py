@@ -59,7 +59,7 @@ class CircularConsistencyTest(unittest.TestCase):
         self.assertEqual(sm1.state_fields, sm2.state_fields)
         self.assertEqual(sm1.event_fields, sm2.event_fields)
         self.assertEqual(sm1.constructor_fields, sm2.constructor_fields)
-        # self.assertEqual(sm1.constructor_code, sm2.constructor_code)
+        self.assertEqual(sm1.constructor_code, sm2.constructor_code)
         self.assertEqual(sm1.raw_h_code, sm2.raw_h_code)
         for state_name in sorted(sm1.states.keys()):
             s1 = sm1.states[state_name]
