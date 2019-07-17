@@ -61,6 +61,8 @@ class CircularConsistencyTest(unittest.TestCase):
         self.assertEqual(sm1.constructor_fields, sm2.constructor_fields)
         self.assertEqual(sm1.constructor_code, sm2.constructor_code)
         self.assertEqual(sm1.raw_h_code, sm2.raw_h_code)
+        self.assertEqual(sm1.initial_state, sm2.initial_state)
+        self.assertEqual(sm1.initial_code, sm2.initial_code)
         for state_name in sorted(sm1.states.keys()):
             s1 = sm1.states[state_name]
             self.assertIn(state_name, sm2.states)
@@ -71,6 +73,13 @@ class CircularConsistencyTest(unittest.TestCase):
                 return [s.state_name for s in state_list]
             self.assertEqual(names(s1.child_states), names(s2.child_states))
             self.assertCountEqual(s1.event_handlers, s2.event_handlers)
+
+        # This one is quite fragile as literally any change in the output will break it. Not sure if it's actually needed.
+        with open('./testdata/oregonPlayer.cpp', 'r') as f:
+            sm1_cpp_content = f.read()
+        with open('./testdata/test_output/oregonPlayer.cpp', 'r') as f:
+            sm2_cpp_content = f.read()
+        self.assertEqual(sm1_cpp_content, sm2_cpp_content)
 
 if __name__ == '__main__':
     unittest.main()

@@ -35,6 +35,9 @@ unsigned int TimerAgony;''')
         self.assertTrue(sm.constructor_code.startswith('me->CharHP = HP;'), sm.constructor_code)
         self.assertTrue(sm.constructor_code.endswith('}'))
 
+        self.assertEqual(sm.initial_code, 'return Q_TRAN(me->StartState);')
+        self.assertEqual(sm.initial_state, 'healthy')
+
 class StateMachineWriterTest(unittest.TestCase):
     OUTPUT_FILE = './testdata/output.graphml'
     def removeOutputFile(self):

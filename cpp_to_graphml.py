@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
@@ -42,6 +43,8 @@ class State:
 @dataclass
 class StateMachineCpp:
     constructor_code: str = ''
+    initial_code: str = ''
+    initial_state: str = ''
     states: Dict[str, State] = field(default_factory=dict)
 
 @dataclass
@@ -87,6 +90,7 @@ class StateMachineParser:
         cpp_parse_result = self.cpp_parser.Parse()
         header_parse_result = self.header_parser.Parse()
         return StateMachine(constructor_code=cpp_parse_result.constructor_code, states=cpp_parse_result.states,
+                            initial_code=cpp_parse_result.initial_code, initial_state=cpp_parse_result.initial_state,
                             raw_h_code=header_parse_result.raw_h_code, state_fields=header_parse_result.state_fields,
                             event_fields=header_parse_result.event_fields, constructor_fields=header_parse_result.constructor_fields)
 
@@ -137,6 +141,15 @@ class CppParser:
 
                     break
 
+        # Only 1/2-line functions are supported at the moment
+        if self._IsInitialFunction(node):
+            body_node = list(node.get_children())[-1]
+            child_nodes = list(body_node.get_children())
+            assert len(child_nodes) in [1, 2]
+            self.result.initial_code = self.ctx.GetNodeText(child_nodes[0])
+            r = r'Q_TRAN\(&%s_([a-z_]*)\);' % self.ctx.state_machine_name
+            self.result.initial_state = re.search(r, self.ctx.GetNodeText(child_nodes[-1]))[1]
+
         for childNode in node.get_children():
             self._TraverseAST(childNode)
 
@@ -144,6 +157,10 @@ class CppParser:
         return (node.kind == clang.cindex.CursorKind.FUNCTION_DECL and
                 node.spelling == self.ctx.state_machine_name + '_ctor')
 
+    def _IsInitialFunction(self, node):
+        return (node.kind == clang.cindex.CursorKind.FUNCTION_DECL and
+                node.spelling == self.ctx.state_machine_name + '_initial' and
+                list(node.get_children())[-1].kind == clang.cindex.CursorKind.COMPOUND_STMT)
 
     def _IsStateFunction(self, node):
         return (node.kind == clang.cindex.CursorKind.FUNCTION_DECL and
@@ -349,16 +366,17 @@ class StateMachineWriter:
         self.graph = create_graphml.create_graph(graphml_root_node, 'G')
         create_graphml.add_start_state(self.graph, "n0")
         self.state_name_to_node_name = {}
-        create_graphml.add_edge(self.graph, "e0",
-                                "n0", "n1",
-                                "",
-                                0, 0, 0, 0)
         self.edge_id = 1
 
         child_index = 1
         for state in self.state_machine.states['global'].child_states:
             self._OutputState(state, child_index, self.graph)
             child_index += 1
+
+        create_graphml.add_edge(self.graph, "e0",
+                                "n0", self.state_name_to_node_name[self.state_machine.initial_state],
+                                self.state_machine.initial_code,
+                                0, 0, 0, 0)
 
         for state_name in self.state_machine.states:
             state = self.state_machine.states[state_name]
