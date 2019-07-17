@@ -539,7 +539,7 @@ def create_qm_constructor(qm_package: QMTag, Filename: str, filename: str, ctor_
     for key in ctor_fields.keys():
         _ = etree.SubElement(qm_ctor, "parameter", name=key, type=ctor_fields[key])
     qm_code = etree.SubElement(qm_ctor, "code")
-    qm_code.text = "%s *me = &%s;\n %s\n QHsm_ctor(&me->super, Q_STATE_CAST(&%s_initial));" % (Filename, filename,
+    qm_code.text = "%s *me = &%s;\n %s\nQHsm_ctor(&me->super, Q_STATE_CAST(&%s_initial));" % (Filename, filename,
                                                                                                ctor_code, Filename)
 
 
