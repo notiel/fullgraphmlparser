@@ -41,8 +41,8 @@ class CircularConsistencyTest(unittest.TestCase):
         self.removeOutputFolder()
         os.makedirs('./testdata/test_output')
 
-    #def tearDown(self):
-    #   self.removeOutputFolder()
+    def tearDown(self):
+       self.removeOutputFolder()
 
     def testFullCycle(self):
         parser = cpp_to_graphml.StateMachineParser(cpp_file_path = './testdata/oregonPlayer.cpp')
@@ -59,19 +59,18 @@ class CircularConsistencyTest(unittest.TestCase):
         self.assertEqual(sm1.state_fields, sm2.state_fields)
         self.assertEqual(sm1.event_fields, sm2.event_fields)
         self.assertEqual(sm1.constructor_fields, sm2.constructor_fields)
-        #self.assertEqual(sm1.constructor_code, sm2.constructor_code)
+        # self.assertEqual(sm1.constructor_code, sm2.constructor_code)
         self.assertEqual(sm1.raw_h_code, sm2.raw_h_code)
         for state_name in sorted(sm1.states.keys()):
             s1 = sm1.states[state_name]
             self.assertIn(state_name, sm2.states)
             s2 = sm2.states[state_name]
             self.assertEqual(s1.state_name, s2.state_name)
-            # TODO(aeremin) Fix problems and re-enable assertions
-            self.assertEqual(s1.parent_state_name, s2.parent_state_name)
+            self.assertEqual(s1.parent_state_name, s2.parent_state_name, s1.state_name)
             def names(state_list):
                 return [s.state_name for s in state_list]
-            # self.assertEqual(names(s1.child_states), names(s2.child_states))
-            # self.assertCountEqual(s1.event_handlers, s2.event_handlers)
+            self.assertEqual(names(s1.child_states), names(s2.child_states))
+            self.assertCountEqual(s1.event_handlers, s2.event_handlers)
 
 if __name__ == '__main__':
     unittest.main()

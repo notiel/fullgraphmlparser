@@ -1,5 +1,6 @@
 #include "qhsm.h"
 $include
+#include "eventHandlers.h"
 #include <stdint.h>
 //Q_DEFINE_THIS_FILE
 /* global-scope definitions -----------------------------------------*/

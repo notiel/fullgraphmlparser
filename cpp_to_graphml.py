@@ -291,7 +291,7 @@ class EventHandlerParser:
                 assert len(children) == 3
                 condition, if_branch, else_branch = children
                 if_handler = self._HandlersFromCompountStmt(if_branch)[0]
-                if_handler.condition = self.ctx.GetNodeText(condition)
+                if_handler.condition = self.ctx.GetNodeText(condition)[:-1] # cut out last ')'
                 else_handler = self._HandlersFromCompountStmt(else_branch)[0]
                 else_handler.condition = 'else'
                 return [if_handler, else_handler]
@@ -339,7 +339,7 @@ class StateMachineWriter:
         self.state_name_to_node_name = {}
         create_graphml.add_edge(self.graph, "e0",
                                 "n0", "n1",
-                                "???",
+                                "",
                                 0, 0, 0, 0)
         self.edge_id = 1
 
@@ -370,6 +370,8 @@ class StateMachineWriter:
 
     def _OutputEdge(self, h: EventHandler):
         link_caption = h.event_type
+        assert link_caption.endswith('_SIG')
+        link_caption = link_caption[:-len('_SIG')]
         if h.condition:
             link_caption = link_caption + '[%s]' % h.condition
 
@@ -397,7 +399,7 @@ class StateMachineWriter:
                 event_type = event_type[:-len('_SIG')]
 
             state_content.append(
-                ('%s/' % event_type) + ('[%s]' % h.condition if h.condition else ''))
+                ('%s' % event_type) + ('[%s]' % h.condition if h.condition else '') + '/')
             for statement in h.statements:
                 for line in statement.split('\n'):
                     state_content.append('  ' + line)

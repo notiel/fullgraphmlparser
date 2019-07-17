@@ -127,17 +127,6 @@ QState OregonPlayer_active(OregonPlayer * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::OregonPlayer::SM::global::active::PILL_RESET} */
-        case PILL_RESET_SIG: {
-            Reset(me);
-            status_ = Q_TRAN(&OregonPlayer_healthy);
-            break;
-        }
-        /* ${SMs::OregonPlayer::SM::global::active::PILL_TEST} */
-        case PILL_TEST_SIG: {
-            status_ = Q_TRAN(&OregonPlayer_test);
-            break;
-        }
         default: {
             status_ = Q_SUPER(&OregonPlayer_global);
             break;
@@ -163,11 +152,6 @@ QState OregonPlayer_alive(OregonPlayer * const me, QEvt const * const e) {
                 printf("Exited state alive");
             #endif /* def DESKTOP */
             status_ = Q_HANDLED();
-            break;
-        }
-        /* ${SMs::OregonPlayer::SM::global::active::alive::PILL_GHOUL} */
-        case PILL_GHOUL_SIG: {
-            status_ = Q_TRAN(&OregonPlayer_ghoul_good);
             break;
         }
         default: {
@@ -453,11 +437,6 @@ QState OregonPlayer_ghoul_good(OregonPlayer * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::OregonPlayer::SM::global::active::ghoul::ghoul_good::PILL_REMOVED} */
-        case PILL_REMOVED_SIG: {
-            status_ = Q_TRAN(&OregonPlayer_wounded);
-            break;
-        }
         default: {
             status_ = Q_SUPER(&OregonPlayer_ghoul);
             break;
@@ -571,18 +550,6 @@ QState OregonPlayer_dead(OregonPlayer * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::OregonPlayer::SM::global::active::dead::TEST_TRIGGER} */
-        case TEST_TRIGGER_SIG: {
-            /* ${SMs::OregonPlayer::SM::global::active::dead::TEST_TRIGGER::[me->CharHP>0]} */
-            if (me->CharHP>0) {
-                status_ = Q_TRAN(&OregonPlayer_wounded);
-            }
-            /* ${SMs::OregonPlayer::SM::global::active::dead::TEST_TRIGGER::[else]} */
-            else {
-                status_ = Q_TRAN(&OregonPlayer_agony);
-            }
-            break;
-        }
         default: {
             status_ = Q_SUPER(&OregonPlayer_active);
             break;
@@ -615,17 +582,6 @@ QState OregonPlayer_test(OregonPlayer * const me, QEvt const * const e) {
             BeepForPeriod(SHORT_BEEP_MS);
               Flash(127, 0, 0, FLASH_MS);
             status_ = Q_HANDLED();
-            break;
-        }
-        /* ${SMs::OregonPlayer::SM::global::test::PILL_GHOUL} */
-        case PILL_GHOUL_SIG: {
-            status_ = Q_TRAN(&OregonPlayer_ghoul_good);
-            break;
-        }
-        /* ${SMs::OregonPlayer::SM::global::test::PILL_RESET} */
-        case PILL_RESET_SIG: {
-            Reset(me);
-            status_ = Q_TRAN(&OregonPlayer_healthy);
             break;
         }
         default: {
