@@ -61,7 +61,7 @@ def main(filenames: Union[List[str], str]):
                      ctor_code, ctor_fields)
     except PermissionError:
         logging.fatal("File already exists and is locked")
-    service_files.create_files(os.path.dirname(filenames[0]), player_signal)
+    service_files.create_files(os.path.dirname(filenames[0]), player_signal, modelname)
 
 
 if __name__ == '__main__':
