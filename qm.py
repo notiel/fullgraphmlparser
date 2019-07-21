@@ -22,7 +22,7 @@ for states and  class Trigger for trigsitions between states and functions for t
 
 from graphml import *
 import re
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from stateclasses import State, Trigger
 
 divider = 10  # we divide graphml coordinates by that value
@@ -54,7 +54,22 @@ def get_state_by_id(states: [State], state_id: str, id_type: str) -> State:
     return states[0]
 
 
-def create_actions(raw_triggers: str, source: str, player_signal: [str]) -> [Trigger]:
+def get_functions(actions: str, functions: List[str]):
+    """
+    gets functions from code
+    :param actions: text of node
+    :param functions: list of sunctions to add new
+    :return:
+    """
+    f_regexp = r'([A-Z]\w+)\([^\)]*\)'
+    new_functions = re.findall(f_regexp, actions)
+    for func in new_functions:
+        if func not in functions:
+            functions.append(func)
+    return
+
+
+def create_actions(raw_triggers: str, source: str, player_signal: List[str], functions: List[str]) -> List[Trigger]:
     """
     parses raw label text with events and their actions to get a list of Triggers ("exit" and "entry" events ignored)
     we use regexp to split raw data string
@@ -75,6 +90,7 @@ def create_actions(raw_triggers: str, source: str, player_signal: [str]) -> [Tri
          Trigger(name="BUTTON2_PRESSED_FOR_THREE_SECOND"), action="play_sound(get_random_sound(FORCE);", source=5),
          Trigger(name="BOTH_BUTTONS_PRESSED"), action="change_color(get_color(rgb_table));
                                                      play_sound(get_sound(BOOT));", source=5)]
+    :param functions: list of fucntions
     :param raw_triggers: string with events and reactions
     :param source: id of source node
     :param player_signal - list of all sygnals
@@ -111,13 +127,16 @@ def create_actions(raw_triggers: str, source: str, player_signal: [str]) -> [Tri
                                dx=len(trigger_name) + internal_trigger_delta, dy=0, points=[], action_x=0,
                                action_y=5 * trigger_id - 2,
                                action_width=len(trigger_name) + action_delta))
+    # add functions to function list
+    get_functions(raw_triggers, functions)
     return actions, player_signal
 
 
-def create_state_from_node(node: dict, node_type: str, min_x: int, min_y: int, states: [State], player_signal: [str]) \
-        -> (State, [str]):
+def create_state_from_node(node: dict, node_type: str, min_x: int, min_y: int, states: [State],
+                           player_signal: List[str], functions: List[str]) -> Tuple[State, List[str]]:
     """
     creates state from mode with node_type type (state or group)
+    :param functions: list with functions
     :param node: dict with node data
     :param node_type: state or group
     :param min_x - min x coordinate to add to state coordinate to excluse negative coordinates
@@ -129,7 +148,7 @@ def create_state_from_node(node: dict, node_type: str, min_x: int, min_y: int, s
     name: str = get_state_label(node) if node_type == 'state' else get_group_label(node)
     actions: str = get_state_actions(node) if node_type == 'state' else get_group_actions(node)
     node_id = node['id']
-    (triggers, player_signal) = create_actions(actions, node_id, player_signal)
+    (triggers, player_signal) = create_actions(actions, node_id, player_signal, functions)
     state_entry: List[str] = [trig.action for trig in triggers if trig.name == 'entry']
     state_exit: List[str] = [trig.action for trig in triggers if trig.name == 'exit']
     state_entry_str: str = '#ifdef DESKTOP\n    printf("Entered state %s");\n#endif /* def DESKTOP */' % name
@@ -187,9 +206,10 @@ def create_global_state(w: int, h: int) -> State:
     return state
 
 
-def create_states_from_nodes(nodes: [dict], coords: tuple, player_signal) -> [State]:
+def create_states_from_nodes(nodes: [dict], coords: tuple, player_signal, functions: List[str]) -> List[State]:
     """
     function gets node data from node dict and returns State object with all necessary data
+    :param functions: list of functions
     :param player_signal: list of signals
     :param coords: min x coordinate to calibrate others, min y coordinate to calibrate others,
     global wigth for global state, global height global state
@@ -202,11 +222,11 @@ def create_states_from_nodes(nodes: [dict], coords: tuple, player_signal) -> [St
     add_terminal_trigger(states)
     for node in nodes:
         if is_node_a_group(node):
-            state, player_signal = create_state_from_node(node, "group", min_x, min_y, states, player_signal)
+            state, player_signal = create_state_from_node(node, "group", min_x, min_y, states, player_signal, functions)
             states.append(state)
     for node in nodes:
         if is_node_a_state(node):
-            state, player_signal = create_state_from_node(node, "state", min_x, min_y, states, player_signal)
+            state, player_signal = create_state_from_node(node, "state", min_x, min_y, states, player_signal, functions)
             states.append(state)
     for node in nodes:
         if is_node_a_choice(node):
@@ -215,7 +235,7 @@ def create_states_from_nodes(nodes: [dict], coords: tuple, player_signal) -> [St
     return states, player_signal
 
 
-def update_states_with_edges(states: [State], flat_edges: [dict], start_state: State, player_signal: [str], min_x: int,
+def update_states_with_edges(states: [State], flat_edges: [dict], start_state: str, player_signal: [str], min_x: int,
                              min_y: int):
     """
     function parses events on edges and adds them as external triggers to corresponding state (excluding start_edge)

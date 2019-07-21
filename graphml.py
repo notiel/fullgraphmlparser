@@ -135,13 +135,13 @@ def get_flat_edges(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     return flattened_edges
 
 
-def get_start_node_data(nodes: List[Dict[str, Any]], edges) -> Tuple[int, int, str]:
+def get_start_node_data(nodes: List[Dict[str, Any]], edges) -> Tuple[str, str, str]:
     """functions gets start node id (target of start edge) and raises exception if no start node found
     :param nodes: list of nodes
     :param edges: list of edges
     :return: id of start node, target of initial trigger, initial trigger action
     """
-    node_id = 0
+    node_id = ""
     for node in nodes:
         if 'y:GenericNode' in node.keys() and '@configuration' in node['y:GenericNode'].keys():
             if node['y:GenericNode']['@configuration'] == 'com.yworks.bpmn.Event.withShadow':
