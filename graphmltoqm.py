@@ -37,10 +37,8 @@ def get_states_from_graphml(filename: str):
         logging.error('UML-diagram %s.graphml does not have start node' % filename)
         return list()
     # add external trigger and update list of signals with them
-    player_signal = qm.update_states_with_edges(qm_states, flat_edges, start, player_signal, coords[0], coords[1])
-    # get notes
-    notes = [node for node in flat_nodes if gr.is_node_a_note(node)]
-    return qm_states
+    _ = qm.update_states_with_edges(qm_states, flat_edges, start, player_signal, coords[0], coords[1])
+    return qm_states, coords[0], coords[1]
 
 
 def main(filenames: Union[List[str], str]):
@@ -68,7 +66,7 @@ def main(filenames: Union[List[str], str]):
         flat_nodes = gr.get_flat_nodes(data)
         state_nodes = [node for node in flat_nodes if
                        gr.is_node_a_state(node) or gr.is_node_a_choice(node) or gr.is_node_a_group(node)]
-        state_nodes.sort(key=lambda st : len(st['id']))
+        state_nodes.sort(key=lambda st: len(st['id']))
         gr.update_qroup_nodes(state_nodes)
         state_nodes.sort(key=gr.coord_sort)
 

@@ -82,7 +82,6 @@ class TriggersCreateTest(unittest.TestCase):
                                 'UpdateHP(me, me->CharHP + ((oregonPlayerQEvt*)e)->value);;', "test", [], [])
         self.assertEqual(res[0].guard, "((((oregonPlayerQEvt*)e)->value+me->CharHP )<GHOUL_HP)")
 
-
     def testNamewithGuard(self):
         res, _ = create_actions('RAD_RCVD[((((oregonPlayerQEvt*)e)->value+me->CharHP )<GHOUL_HP)]/\n    '
                                 'UpdateHP(me, me->CharHP + ((oregonPlayerQEvt*)e)->value);;', "test", [], [])
@@ -109,10 +108,10 @@ class TriggersCreateTest(unittest.TestCase):
                                         BeepForPeriod(SHORT_BEEP_MS);""", "test", [], [])
         self.assertEqual(res[1].guard, "else")
 
-
     def testNoTrigger(self):
         res, _ = create_actions("a = b / c", "test", [], [])
         self.assertEqual(len(res), 0)
+
 
 if __name__ == '__main__':
     unittest.main()

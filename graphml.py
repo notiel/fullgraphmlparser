@@ -405,4 +405,3 @@ def get_edge_label_coordinates(edge: Dict[str, Any]) -> Tuple[int, int, int]:
                 return 0, 0, 0
         except KeyError:
             continue
-

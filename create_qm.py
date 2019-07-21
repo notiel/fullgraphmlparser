@@ -540,7 +540,7 @@ def create_qm_constructor(qm_package: QMTag, Filename: str, filename: str, ctor_
         _ = etree.SubElement(qm_ctor, "parameter", name=key, type=ctor_fields[key])
     qm_code = etree.SubElement(qm_ctor, "code")
     qm_code.text = "%s *me = &%s;\n %s\nQHsm_ctor(&me->super, Q_STATE_CAST(&%s_initial));" % (Filename, filename,
-                                                                                               ctor_code, Filename)
+                                                                                              ctor_code, Filename)
 
 
 def create_qm_files(qm_model: QMTag, modelnames: [str], player_signal: [str], event_fields: dict, hcode: str,
@@ -588,7 +588,8 @@ def create_qm_files(qm_model: QMTag, modelnames: [str], player_signal: [str], ev
                             % (modelname, modelname, Modelname)
 
             modelname = modelnames[0]
-            h_code = Template(t.read()).substitute({"hcode": hcode, "declare": declare, "declares": declares, "filename_h": name + "_h",
+            h_code = Template(t.read()).substitute({"hcode": hcode, "declare": declare,
+                                                    "declares": declares, "filename_h": name + "_h",
                                                     "event_struct": get_event_struct(event_fields, modelname),
                                                     "player_signals": get_enum(player_signal)})
             qm_text.text = h_code
@@ -604,7 +605,7 @@ def prepare_qm():
 
 
 def create_qm(qm_package: QMTag, modelname: str, start_state: str, start_action: str,
-              notes: List[Dict[str, Any]], states: List[State], coords: List[int]) \
+              notes: List[Dict[str, Any]], states: List[State], coords: Tuple[int, int, int , int]) \
         -> Tuple[Dict[str, str], str, str, str, Dict[str, str]]:
     """
     function creates xml from list os states with trsnsitions using special rools and writes in to .qm file
@@ -638,7 +639,7 @@ def create_qm(qm_package: QMTag, modelname: str, start_state: str, start_action:
             hcode = '\n//Start of h code from diagram\n' + '\n'.join([s for s in text.split('\n')[1:] if s]) + \
                     '\n//End of h code from diagram\n'
         if text.startswith("Code for cpp-file:"):
-            cppcode = '\n//Start of c code from diagram\n'+'\n'.join([s for s in text.split('\n')[1:] if s])+\
+            cppcode = '\n//Start of c code from diagram\n'+'\n'.join([s for s in text.split('\n')[1:] if s]) +\
                       "\n//End of c code from diagram\n"
         if text.startswith("Constructor code"):
             ctor_code = '\n'.join(text.split('\n')[1:])
