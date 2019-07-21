@@ -117,7 +117,7 @@ def create_actions(raw_triggers: str, source: str, player_signal: List[str], fun
         if trigger_name not in player_signal and trigger_name and trigger_name != "entry" and trigger_name != 'exit':
             player_signal.append(trigger_name)
         # Un-indent each line in the (potentially multiline) action by the indent of the first line.
-        lines = action.split('\n')[1:] # discard 0, as 0-th line is the whitespace after 'SOME_SIG/'
+        lines = action.split('\n')[1:]  # discard 0, as 0-th line is the whitespace after 'SOME_SIG/'
         if lines:
             indent = len(lines[0]) - len(lines[0].lstrip())
             action = '\n'.join(line[indent:] for line in lines)
@@ -392,17 +392,17 @@ def is_state_a_child_by_label(parent: State, label: str)-> bool:
     """
     ckecks if parent state is really parent for child state
     :param parent: is a parent state?
-    :param child: child label
+    :param label: child label
     :return: is a  child?
     """
     pass
     return label.startswith(parent.id)
 
 
-def get_parent_by_label(label: str, states: List[State]) -> State:
+def get_parent_by_label(label: str, states: List[State]) -> Optional[State]:
     """
     gets nearest parent using node id
-    :param child: child label
+    :param label: child label
     :param states: list of States
     :return:
     """
@@ -484,3 +484,46 @@ def get_path(state1: str, state2: str, states) -> str:
             path2 = path2[:parents2.index(parent) + 1]
             path += "/".join(list(reversed(path2)))
             return path
+
+
+def get_graphml_coords_by_state_name(states: List[State], name: str, minx: float, miny: float) -> \
+        Tuple[float, float, float, float]:
+    """
+    gets coords for graphml by name
+    :param states: list of states
+    :param name: name of needed state
+    :param minx: min x
+    :param miny: min y
+    :return: x, y, width, height
+    """
+    for state in states:
+        if state.name == name:
+            return (state.x - 2) * divider + minx, (state.y - 2) * divider + miny, \
+                   state.width * divider, state.height * divider
+    return 0, 0, 0, 0
+
+
+def get_edge_coords_by_state_and_name(states: List[State], name_state: str, name_edge: str, minx: int, miny: int) -> \
+        Tuple[int, int, int, int, List[Tuple[int, int]]]:
+    """
+    get coords of edge by edge name and source name
+    :param miny: min y of scheme
+    :param minx:  min x of scheme
+    :param states: list of states
+    :param name_state: name of state
+    :param name_edge: name of edge
+    :return:
+    """
+    for state in states:
+        if state.name == name_state:
+            for trig in state.trigs:
+                if trig.name == name_edge:
+                    sx = trig.x * divider
+                    sy = trig.y * divider
+                    tx = trig.dx * divider
+                    ty = trig.dy * divider
+                    points = list()
+                    for point in trig.points:
+                        points.append((point[0]*divider + minx, point[1]*divider + miny))
+                    return sx, sy, tx, ty, points
+    return 0, 0, 0, 0, []

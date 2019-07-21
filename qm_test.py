@@ -1,7 +1,6 @@
 import unittest
 
 from qm import *
-from stateclasses import  *
 
 
 class TriggersCreateTest(unittest.TestCase):
