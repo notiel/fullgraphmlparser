@@ -47,7 +47,7 @@ class CircularConsistencyTest(unittest.TestCase):
     def testFullCycle(self):
         parser = cpp_to_graphml.StateMachineParser(cpp_file_path = './testdata/oregonPlayer.cpp')
         sm1 = parser.Parse()
-        cpp_to_graphml.StateMachineWriter(sm1).WriteToFile('./testdata/test_output/oregonPlayer.graphml')
+        cpp_to_graphml.StateMachineWriter(sm1).WriteToFile('./testdata/test_output/oregonPlayer.graphml', './testdata/oregonPlayer.graphml')
         graphmltoqm.main('./testdata/test_output/oregonPlayer')
         shutil.copy('./testdata/qhsm.h', './testdata/test_output')
         shutil.copy('./testdata/eventHandlers.h', './testdata/test_output')

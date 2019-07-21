@@ -8,6 +8,8 @@ import clang.cindex
 from lxml import etree
 
 import create_graphml
+import graphmltoqm
+import qm
 
 try:
     clang_index = clang.cindex.Index.create()
@@ -361,7 +363,14 @@ class StateMachineWriter:
     def __init__(self, state_machine: StateMachine):
         self.state_machine = state_machine
 
-    def WriteToFile(self, filename: str):
+    def WriteToFile(self, filename: str, previous_filename: Optional[str] = None):
+        previous_filename = previous_filename or filename
+        previous_states = []
+        if os.path.isfile(previous_filename):
+            previous_filename = os.path.splitext(previous_filename)[0]
+            previous_states = graphmltoqm.get_states_from_graphml(previous_filename)
+
+
         graphml_root_node = create_graphml.prepare_graphml()
         self.graph = create_graphml.create_graph(graphml_root_node, 'G')
         create_graphml.add_start_state(self.graph, "n0")
@@ -370,7 +379,7 @@ class StateMachineWriter:
 
         child_index = 1
         for state in self.state_machine.states['global'].child_states:
-            self._OutputState(state, child_index, self.graph)
+            self._OutputState(state, child_index, self.graph, previous_states)
             child_index += 1
 
         create_graphml.add_edge(self.graph, "e0",
@@ -414,7 +423,7 @@ class StateMachineWriter:
                                 0, 0, 0, 0)
         self.edge_id += 1
 
-    def _OutputState(self, state, index_as_child, graph_parent):
+    def _OutputState(self, state, index_as_child, graph_parent, previous_states):
         state_content = list()
         for h in state.event_handlers:
             if h.state_from != h.state_to:
@@ -438,19 +447,33 @@ class StateMachineWriter:
         full_node_name = (self.state_name_to_node_name[state.parent_state_name] + ':' if state.parent_state_name != 'global'
                           else '') + 'n%d' % index_as_child
         self.state_name_to_node_name[state.state_name] = full_node_name
+        h = 100
+        w = 200
+        x0 = 259
+        y0 = 255
+        previous_states_with_name = [s for s in previous_states if s.name == state.state_name]
+        if previous_states_with_name:
+            print('For state %s using cached coordinates' % state.state_name)
+            h = previous_states_with_name[0].height * qm.divider
+            w = previous_states_with_name[0].width * qm.divider
+            x0 = previous_states_with_name[0].x * qm.divider
+            y0 = previous_states_with_name[0].y * qm.divider
+        else:
+             print('For state %s using DUMB coordinates' % state.state_name)
+
         if state.child_states:
             group_node = create_graphml.add_group_node(graph_parent, state.state_name, '\n'.join(
-                state_content), full_node_name, 100, 200, 259, 255)
+                state_content), full_node_name, h, w, x0, y0)
             parent = create_graphml.create_graph(
                 group_node, full_node_name + ':')
 
             child_index = 0
             for child_state in state.child_states:
-                self._OutputState(child_state, child_index, parent)
+                self._OutputState(child_state, child_index, parent, previous_states)
                 child_index += 1
         else:
             create_graphml.add_simple_node(graph_parent, state.state_name, '\n'.join(
-                state_content), full_node_name, 100, 200, 259, 255)
+                state_content), full_node_name, h, w, x0, y0)
 
 
 if __name__ == '__main__':
