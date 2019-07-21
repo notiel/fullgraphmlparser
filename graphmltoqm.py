@@ -101,5 +101,5 @@ def main(filenames: Union[List[str], str]):
 
 
 if __name__ == '__main__':
-    states = get_states_from_graphml(sys.argv[1:][0])
+    # states = get_states_from_graphml(sys.argv[1:][0])
     main(sys.argv[1:])
