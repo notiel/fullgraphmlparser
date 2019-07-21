@@ -15,9 +15,9 @@ def get_states_from_graphml(filename: str):
     :return:
     """
     try:
-        data = xmltodict.parse(open(filename + '.graphml').read())
+        data = xmltodict.parse(open(filename).read())
     except FileNotFoundError:
-        logging.error('File %s.graphml does not exist' % filename)
+        logging.error('File %s does not exist' % filename)
         return list()
     # get nodes from file
     flat_nodes = gr.get_flat_nodes(data)
@@ -55,12 +55,12 @@ def main(filenames: Union[List[str], str]):
     modelnames: List[str] = list()
     for filename in filenames:
         try:
-            data = xmltodict.parse(open(filename + '.graphml').read())
+            data = xmltodict.parse(open(filename).read())
             modelname = os.path.basename(filename)
             modelname = modelname[0].lower() + modelname[1:]
             modelnames.append(modelname)
         except FileNotFoundError:
-            logging.error('File %s.graphml does not exist' % filename)
+            logging.error('File %s does not exist' % filename)
             continue
         # get nodes from file
         flat_nodes = gr.get_flat_nodes(data)
