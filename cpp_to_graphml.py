@@ -27,6 +27,7 @@ except:
 # Запуск:
 #   py -3 cpp_to_graphml.py <путь к cpp-файлу диаграммы>
 
+
 @dataclass
 class EventHandler:
     state_from: str
@@ -35,12 +36,14 @@ class EventHandler:
     condition: Optional[str]
     statements: List[str]
 
+
 @dataclass
 class State:
     state_name: str
     parent_state_name: Optional[str] = None
     event_handlers: List[EventHandler] = field(default_factory=list)
     child_states: List['State'] = field(default_factory=list)
+
 
 @dataclass
 class StateMachineCpp:
@@ -49,6 +52,7 @@ class StateMachineCpp:
     initial_state: str = ''
     states: Dict[str, State] = field(default_factory=dict)
 
+
 @dataclass
 class StateMachineHeader:
     raw_h_code: str = ''
@@ -56,9 +60,11 @@ class StateMachineHeader:
     event_fields: str = ''
     constructor_fields: str = ''
 
+
 @dataclass
 class StateMachine(StateMachineCpp, StateMachineHeader):
     pass
+
 
 class ParsingContext:
     state_machine_name: str
@@ -94,7 +100,9 @@ class StateMachineParser:
         return StateMachine(constructor_code=cpp_parse_result.constructor_code, states=cpp_parse_result.states,
                             initial_code=cpp_parse_result.initial_code, initial_state=cpp_parse_result.initial_state,
                             raw_h_code=header_parse_result.raw_h_code, state_fields=header_parse_result.state_fields,
-                            event_fields=header_parse_result.event_fields, constructor_fields=header_parse_result.constructor_fields)
+                            event_fields=header_parse_result.event_fields,
+                            constructor_fields=header_parse_result.constructor_fields)
+
 
 class CppParser:
     def __init__(self, cpp_file_path: str):
@@ -137,7 +145,8 @@ class CppParser:
                             node_text = '\n'.join(lines)
                         constructor_statements.append(node_text)
 
-                    # We skip the very first statement as it always 'OregonPlayer *me = &oregonPlayer;' which added automatically
+                    # We skip the very first statement as it always 'OregonPlayer *me = &oregonPlayer;'
+                    #  which added automatically
                     # We also skip the last as it's parent constructor call which is also added automatically
                     self.result.constructor_code = '\n'.join(constructor_statements[1:-1]).rstrip()
 
@@ -189,7 +198,8 @@ class HeaderParser:
                 if attributes and attributes[0].type.spelling == 'QHsm':
                     self.result.state_fields = '\n'.join([self.ctx.GetNodeText(attr) for attr in attributes[1:]])
 
-            if node.kind == clang.cindex.CursorKind.FUNCTION_DECL and node.spelling == self.ctx.state_machine_name + '_ctor':
+            if node.kind == clang.cindex.CursorKind.FUNCTION_DECL \
+                    and node.spelling == self.ctx.state_machine_name + '_ctor':
                 # In function declaration last symbol is either ',' or '
                 convert = lambda attr: '%s %s;' % (attr.type.spelling, attr.spelling)
                 self.result.constructor_fields = '\n'.join([convert(attr) for attr in node.get_children()])
@@ -207,13 +217,14 @@ class HeaderParser:
                     begin = i + 1
                 if '//End of h code from diagram' in line:
                     end = i
-            self.result.raw_h_code =  ''.join(lines[begin:end]) if (begin and end) else ''
+            self.result.raw_h_code = ''.join(lines[begin:end]) if (begin and end) else ''
+
 
 class StateParser:
     def __init__(self, ctx: ParsingContext, root_node):
         self.ctx = ctx
         self.root_node = root_node
-        self.result = State(state_name = self.ctx.RemoveStateMachinNamePrefix(
+        self.result = State(state_name=self.ctx.RemoveStateMachinNamePrefix(
             root_node.spelling))
 
     def Parse(self):
@@ -370,7 +381,6 @@ class StateMachineWriter:
             previous_filename = os.path.splitext(previous_filename)[0]
             previous_states = graphmltoqm.get_states_from_graphml(previous_filename)
 
-
         graphml_root_node = create_graphml.prepare_graphml()
         self.graph = create_graphml.create_graph(graphml_root_node, 'G')
         create_graphml.add_start_state(self.graph, "n0")
@@ -385,7 +395,7 @@ class StateMachineWriter:
         create_graphml.add_edge(self.graph, "e0",
                                 "n0", self.state_name_to_node_name[self.state_machine.initial_state],
                                 self.state_machine.initial_code,
-                                0, 0, 0, 0)
+                                0, 0, 0, 0, [])
 
         for state_name in self.state_machine.states:
             state = self.state_machine.states[state_name]
@@ -420,7 +430,7 @@ class StateMachineWriter:
                                 self.state_name_to_node_name[h.state_from],
                                 self.state_name_to_node_name[h.state_to],
                                 link_caption,
-                                0, 0, 0, 0)
+                                0, 0, 0, 0, [])
         self.edge_id += 1
 
     def _OutputState(self, state, index_as_child, graph_parent, previous_states):
@@ -459,7 +469,7 @@ class StateMachineWriter:
             x0 = previous_states_with_name[0].x * qm.divider
             y0 = previous_states_with_name[0].y * qm.divider
         else:
-             print('For state %s using DUMB coordinates' % state.state_name)
+            print('For state %s using DUMB coordinates' % state.state_name)
 
         if state.child_states:
             group_node = create_graphml.add_group_node(graph_parent, state.state_name, '\n'.join(

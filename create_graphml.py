@@ -1,5 +1,6 @@
 from lxml import etree
 import xmltodict
+from typing import List, Tuple
 
 Tag = etree._Element
 
@@ -316,9 +317,10 @@ def add_group_node(parent: Tag, node_text: str, content: str, node_id: str,
 
 
 def add_edge(parent: Tag, edge_id: str, source: str, target: str, text: str,
-             x1: float, y1: float, x2: float, y2: float):
+             x1: float, y1: float, x2: float, y2: float, points: List[Tuple[int, int]]):
     """
     adds edge to xml
+    :param points: list of trigger points
     :param parent: parent tag
     :param edge_id: edge id
     :param source: source node id
@@ -335,7 +337,10 @@ def add_edge(parent: Tag, edge_id: str, source: str, target: str, text: str,
     data = etree.SubElement(edge, "data", key="d10")
     nmspc_y = namespace_dict['y']
     polyline_edge = etree.SubElement(data, etree.QName(nmspc_y, 'PolyLineEdge'))
-    _ = etree.SubElement(polyline_edge, etree.QName(nmspc_y, 'Path'), sx=str(x1), sy=str(y1), tx=str(x2), ty=str(y2))
+    path = etree.SubElement(polyline_edge, etree.QName(nmspc_y, 'Path'), sx=str(x1), sy=str(y1), tx=str(x2), ty=str(y2))
+    if points:
+        for point in points:
+            _ = etree.SubElement(path, etree.QName(nmspc_y, 'Point'), x=point[0], y=point[1])
     _ = etree.SubElement(polyline_edge, etree.QName(nmspc_y, 'LineStyle'), **linestyle_dict)
     _ = etree.SubElement(polyline_edge, etree.QName(nmspc_y, 'Arrows'), **arrows_dict)
     edgelabel = etree.SubElement(polyline_edge, etree.QName(nmspc_y, 'EdgeLabel'), **edge_dict)
