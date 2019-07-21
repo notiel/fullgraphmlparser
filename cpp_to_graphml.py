@@ -379,7 +379,7 @@ class StateMachineWriter:
         previous_states = []
         if os.path.isfile(previous_filename):
             previous_filename = os.path.splitext(previous_filename)[0]
-            previous_states = graphmltoqm.get_states_from_graphml(previous_filename)
+            previous_states, minx, miny = graphmltoqm.get_states_from_graphml(previous_filename)
 
         graphml_root_node = create_graphml.prepare_graphml()
         self.graph = create_graphml.create_graph(graphml_root_node, 'G')
