@@ -14,8 +14,8 @@ import graphmltoqm
 
 def getQmWithArgs():
     if sys.platform == 'win32':
-        # return [os.environ.get('PROGRAMFILES(X86)') + '/qm/bin/qm']
-        return ['C:/qp/qm/bin/qm']
+        return [os.environ.get('PROGRAMFILES(X86)') + '/qm/bin/qm']
+        # return ['C:/qp/qm/bin/qm']
 
     if sys.platform == 'linux':
         # 1. On Linux, QM installer just unpacks itself wherever it was run,
@@ -42,8 +42,8 @@ class CircularConsistencyTest(unittest.TestCase):
         self.removeOutputFolder()
         os.makedirs('./testdata/test_output')
 
-    # def tearDown(self):
-       # self.removeOutputFolder()
+    def tearDown(self):
+        self.removeOutputFolder()
 
     def testFullCycle(self):
         parser = cpp_to_graphml.StateMachineParser(cpp_file_path='./testdata/oregonPlayer.cpp')
