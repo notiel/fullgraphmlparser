@@ -14,8 +14,14 @@ import graphmltoqm
 
 def getQmWithArgs():
     if sys.platform == 'win32':
-        return [os.environ.get('PROGRAMFILES(X86)') + '/qm/bin/qm']
-        # return ['C:/qp/qm/bin/qm']
+        potential_qm_path = [os.environ.get('SYSTEMDRIVE') + '/qp', os.environ.get('PROGRAMFILES(X86)')]
+        for p in potential_qm_path:
+            potential_qm_exe = p + '/qm/bin/qm.exe'
+            print('Trying to find qm.exe here: ' + potential_qm_exe)
+            if os.path.isfile(potential_qm_exe):
+                print('qm.exe found at %s, using it' % potential_qm_exe)
+                return [potential_qm_exe]
+        raise NotImplementedError('QM not found in supported locations!')
 
     if sys.platform == 'linux':
         # 1. On Linux, QM installer just unpacks itself wherever it was run,
