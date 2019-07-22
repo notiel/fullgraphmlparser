@@ -14,7 +14,8 @@ import graphmltoqm
 
 def getQmWithArgs():
     if sys.platform == 'win32':
-        return [os.environ.get('PROGRAMFILES(X86)') + '/qm/bin/qm']
+         return [os.environ.get('PROGRAMFILES(X86)') + '/qm/bin/qm']
+        # return ['С:/qp/qm/bin/qm/']
 
     if sys.platform == 'linux':
         # 1. On Linux, QM installer just unpacks itself wherever it was run,

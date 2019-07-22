@@ -18,7 +18,7 @@ def get_states_from_graphml(filename: str):
         data = xmltodict.parse(open(filename).read())
     except FileNotFoundError:
         logging.error('File %s does not exist' % filename)
-        return list()
+        return list(), 0, 0
     # get nodes from file
     flat_nodes = gr.get_flat_nodes(data)
     state_nodes = [node for node in flat_nodes if
@@ -35,7 +35,7 @@ def get_states_from_graphml(filename: str):
         start, start_node, start_action = gr.get_start_node_data(flat_nodes, flat_edges)
     except ValueError:
         logging.error('UML-diagram %s.graphml does not have start node' % filename)
-        return list()
+        return list(), 0, 0
     # add external trigger and update list of signals with them
     _ = qm.update_states_with_edges(qm_states, flat_edges, start, player_signal, coords[0], coords[1])
     return qm_states, coords[0], coords[1]

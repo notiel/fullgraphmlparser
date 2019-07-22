@@ -15,7 +15,7 @@ try:
     clang_index = clang.cindex.Index.create()
 except:
     # Hack to support linux (e.g. Travis)
-    clang.cindex.Config.set_library_file('/usr/lib/llvm-8/lib/libclang.so.1')
+    # clang.cindex.Config.set_library_file('/usr/lib/llvm-8/lib/libclang.so.1')
     clang_index = clang.cindex.Index.create()
 
 # Зависимости:
@@ -378,7 +378,7 @@ class StateMachineWriter:
         previous_filename = previous_filename or filename
         previous_states = []
         if os.path.isfile(previous_filename):
-            previous_filename = os.path.splitext(previous_filename)[0]
+            # previous_filename = os.path.splitext(previous_filename)[0]
             previous_states, minx, miny = graphmltoqm.get_states_from_graphml(previous_filename)
 
         graphml_root_node = create_graphml.prepare_graphml()
