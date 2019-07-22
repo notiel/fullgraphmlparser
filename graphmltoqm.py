@@ -91,7 +91,7 @@ def main(filenames: Union[List[str], str]):
                                                                             coords)
     # create file with final code
     try:
-        cr.finish_qm(qm_model, qm_package, filenames[0], modelnames, player_signal, event_fields, hcode, cppcode,
+        cr.finish_qm(qm_model, qm_package, os.path.split(filenames[0])[1], modelnames, player_signal, event_fields, hcode, cppcode,
                      ctor_code, ctor_fields)
     except PermissionError:
         logging.fatal("File already exists and is locked")
