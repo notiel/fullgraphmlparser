@@ -15,7 +15,7 @@ try:
     clang_index = clang.cindex.Index.create()
 except:
     # Hack to support linux (e.g. Travis)
-    # clang.cindex.Config.set_library_file('/usr/lib/llvm-8/lib/libclang.so.1')
+    clang.cindex.Config.set_library_file('/usr/lib/llvm-8/lib/libclang.so.1')
     clang_index = clang.cindex.Index.create()
 
 # Зависимости:
