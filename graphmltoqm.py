@@ -57,6 +57,7 @@ def main(filenames: Union[List[str], str]):
         try:
             data = xmltodict.parse(open(filename).read())
             modelname = os.path.basename(filename)
+            modelname = modelname.split('.')[0]
             modelname = modelname[0].lower() + modelname[1:]
             modelnames.append(modelname)
         except FileNotFoundError:
@@ -91,7 +92,7 @@ def main(filenames: Union[List[str], str]):
                                                                             coords)
     # create file with final code
     try:
-        cr.finish_qm(qm_model, qm_package, os.path.split(filenames[0])[1], modelnames, player_signal, event_fields, hcode, cppcode,
+        cr.finish_qm(qm_model, qm_package, os.path.splitext(filenames[0])[0], modelnames, player_signal, event_fields, hcode, cppcode,
                      ctor_code, ctor_fields)
     except PermissionError:
         logging.fatal("File already exists and is locked")
