@@ -8,8 +8,6 @@ import sys
 import os
 from typing import Union, List
 
-# test1
-
 
 def get_states_from_graphml(filename: str):
     """
@@ -42,8 +40,6 @@ def get_states_from_graphml(filename: str):
     _ = qm.update_states_with_edges(qm_states, flat_edges, start, player_signal, coords[0], coords[1])
     return qm_states, coords[0], coords[1]
 
-
-# test 2
 
 def main(filenames: Union[List[str], str]):
 
