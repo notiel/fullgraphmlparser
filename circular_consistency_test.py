@@ -58,7 +58,8 @@ class CircularConsistencyTest(unittest.TestCase):
         graphmltoqm.main('./testdata/test_output/oregonPlayer.graphml')
         shutil.copy('./testdata/qhsm.h', './testdata/test_output')
         shutil.copy('./testdata/eventHandlers.h', './testdata/test_output')
-        subprocess.run(getQmWithArgs() + ['./testdata/test_output/oregonPlayer.qm', '-c'], check=True, timeout=10)
+        subprocess.run(getQmWithArgs() + ['./testdata/test_output/oregonPlayer.qm', '-c'], check=True, timeout=10, stdout=subprocess.PIPE,
+                     stderr=subprocess.STDOUT)
         parser2 = cpp_to_graphml.StateMachineParser(cpp_file_path='./testdata/test_output/oregonPlayer.cpp')
         sm2 = parser2.Parse()
 
