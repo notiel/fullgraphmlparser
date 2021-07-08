@@ -1,1 +1,1 @@
-[![Build Status](https://travis-ci.org/notiel/fullgraphmlparser.svg?branch=master)](https://travis-ci.org/notiel/fullgraphmlparser)
+[![CI](https://github.com/notiel/fullgraphmlparser/actions/workflows/CI.yml/badge.svg)](https://github.com/notiel/fullgraphmlparser/actions/workflows/CI.yml)
