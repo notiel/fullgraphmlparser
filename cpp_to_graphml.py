@@ -492,4 +492,4 @@ if __name__ == '__main__':
         '.cpp'), 'First command line argument should be a *.cpp file!'
     parser = StateMachineParser(file_path)
     StateMachineWriter(parser.Parse()).WriteToFile(
-        file_path.replace('.cpp', '.graphml'))
+        file_path.replace('.cpp', '.graphml'), file_path.replace('.cpp', '1.graphml'))

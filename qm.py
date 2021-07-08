@@ -152,7 +152,7 @@ def create_state_from_node(node: dict, node_type: str, min_x: int, min_y: int, s
     state_entry: List[str] = [trig.action for trig in triggers if trig.name == 'entry']
     state_exit: List[str] = [trig.action for trig in triggers if trig.name == 'exit']
     state_entry_str: str = '#ifdef DESKTOP\n    printf("Entered state %s");\n#endif /* def DESKTOP */' % name
-    state_entry += state_entry[0] if state_entry else ""
+    state_entry_str += state_entry[0] if state_entry else ""
     state_exit_str: str = '#ifdef DESKTOP\n    printf("Exited state %s");\n#endif /* def DESKTOP */' % name
     state_exit_str += state_exit[0] if state_exit else ""
     triggers: List[Trigger] = [trig for trig in triggers if trig.name != 'entry' and trig.name != 'exit']
