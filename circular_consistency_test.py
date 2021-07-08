@@ -82,6 +82,8 @@ class CircularConsistencyTest(unittest.TestCase):
             self.assertEqual(names(s1.child_states), names(s2.child_states))
             self.assertCountEqual(s1.event_handlers, s2.event_handlers)
 
+        self.maxDiff = None
+
         # This one is quite fragile as literally any change in the output will break it. Not sure if it's actually needed.
         with open('./testdata/oregonPlayer.cpp', 'r') as f:
             sm1_cpp_content = f.read()
