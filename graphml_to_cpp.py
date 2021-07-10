@@ -31,10 +31,8 @@ class CppFileWriter:
         self.f = None
 
     def _write_constructor(self):
-        self._insert_string(
-            '/*.$define${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/\n')
-        self._insert_string(
-            '/*.${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor} ...............................................*/\n')
+        self._write_full_line_comment('.$define${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', 'v')
+        self._write_full_line_comment('.${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', '.')
         self._insert_string('void STATE_MACHINE_CAPITALIZED_NAME_ctor(\n')
         constructor_fields: str = self.notes_dict['constructor_fields']['y:UMLNoteNode']['y:NodeLabel']['#text']
         self._insert_string('    ' + ',\n    '.join(constructor_fields.replace(';', '').split('\n')[1:]) + ')\n')
@@ -45,16 +43,12 @@ class CppFileWriter:
         self._insert_string('\n')
         self._insert_string('    QHsm_ctor(&me->super, Q_STATE_CAST(&STATE_MACHINE_CAPITALIZED_NAME_initial));\n')
         self._insert_string('}\n')
-        self._insert_string(
-            '/*.$enddef${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/\n')
+        self._write_full_line_comment('.$enddef${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', '^')
 
     def _write_initial(self):
-        self._insert_string(
-            '/*.$define${SMs::STATE_MACHINE_CAPITALIZED_NAME} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/\n')
-        self._insert_string(
-            '/*.${SMs::STATE_MACHINE_CAPITALIZED_NAME} ....................................................*/\n')
-        self._insert_string(
-            '/*.${SMs::STATE_MACHINE_CAPITALIZED_NAME::SM} ................................................*/\n')
+        self._write_full_line_comment('.$define${SMs::STATE_MACHINE_CAPITALIZED_NAME}', 'v')
+        self._write_full_line_comment('.${SMs::STATE_MACHINE_CAPITALIZED_NAME}', '.')
+        self._write_full_line_comment('.${SMs::STATE_MACHINE_CAPITALIZED_NAME::SM}', '.')
         self._insert_string(
             'QState STATE_MACHINE_CAPITALIZED_NAME_initial(STATE_MACHINE_CAPITALIZED_NAME * const me, void const * const par) {\n')
         self._insert_string('    /*.${SMs::STATE_MACHINE_CAPITALIZED_NAME::SM::initial} */\n')
@@ -76,6 +70,9 @@ class CppFileWriter:
             suffix = '~' + suffix[1:]
 
         return self._insert_string(prefix + shortened_guard + suffix)
+
+    def _write_full_line_comment(self, text: str, filler: str):
+        self._insert_string(('/*' + text.replace('STATE_MACHINE_NAME', self.sm_name).replace('STATE_MACHINE_CAPITALIZED_NAME', self._sm_capitalized_name()) + ' ').ljust(76, filler) + '*/\n')
 
     def _sm_capitalized_name(self) -> str:
         return self.sm_name[0].upper() + self.sm_name[1:]
