@@ -23,34 +23,47 @@ class CppFileWriter:
         with open(os.path.join(folder, '%s_new.cpp' % self.sm_name), 'w') as f:
             self.f = f
             self._insert_file_template('preamble_c.txt')
-            self._insert_string('/*.$define${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/\n')
-            self._insert_string('/*.${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor} ...............................................*/\n')
-            self._insert_string('void STATE_MACHINE_CAPITALIZED_NAME_ctor(\n')
-            constructor_fields: str = self.notes_dict['constructor_fields']['y:UMLNoteNode']['y:NodeLabel']['#text']
-            self._insert_string('    ' + ',\n    '.join(constructor_fields.replace(';', '').split('\n')[1:]) + ')\n')
-            self._insert_string('{\n')
-            self._insert_string('    STATE_MACHINE_CAPITALIZED_NAME *me = &STATE_MACHINE_NAME;\n')
-            constructor_code: str = self.notes_dict['constructor_code']['y:UMLNoteNode']['y:NodeLabel']['#text']
-            self._insert_string('     ' + '\n    '.join(
-                [v for v in constructor_code.replace('\r', '').split('\n')[1:] if v.strip() != '\n']
-            ))
-            self._insert_string('\n')
-            self._insert_string('    QHsm_ctor(&me->super, Q_STATE_CAST(&STATE_MACHINE_CAPITALIZED_NAME_initial));\n')
-            self._insert_string('}\n')
-            self._insert_string('/*.$enddef${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/\n')
-
-            self._insert_string('/*.$define${SMs::STATE_MACHINE_CAPITALIZED_NAME} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/\n')
-            self._insert_string('/*.${SMs::STATE_MACHINE_CAPITALIZED_NAME} ....................................................*/\n')
-            self._insert_string('/*.${SMs::STATE_MACHINE_CAPITALIZED_NAME::SM} ................................................*/\n')
-            self._insert_string('QState STATE_MACHINE_CAPITALIZED_NAME_initial(STATE_MACHINE_CAPITALIZED_NAME * const me, void const * const par) {\n')
-            self._insert_string('    /*.${SMs::STATE_MACHINE_CAPITALIZED_NAME::SM::initial} */\n')
-            self._insert_string('    %s\n' % self.start_action)
-            self._insert_string('    return Q_TRAN(&STATE_MACHINE_CAPITALIZED_NAME_%s);\n' % self.id_to_name[self.start_node])
-            self._insert_string('}\n')
-            self._write_state(f, self.states[0], 'SMs::%s::SM' % self._sm_capitalized_name())
+            self._write_constructor()
+            self._write_initial()
+            self._write_states_recursively(f, self.states[0], 'SMs::%s::SM' % self._sm_capitalized_name())
             self._insert_file_template('footer_c.txt')
 
         self.f = None
+
+    def _write_constructor(self):
+        self._insert_string(
+            '/*.$define${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/\n')
+        self._insert_string(
+            '/*.${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor} ...............................................*/\n')
+        self._insert_string('void STATE_MACHINE_CAPITALIZED_NAME_ctor(\n')
+        constructor_fields: str = self.notes_dict['constructor_fields']['y:UMLNoteNode']['y:NodeLabel']['#text']
+        self._insert_string('    ' + ',\n    '.join(constructor_fields.replace(';', '').split('\n')[1:]) + ')\n')
+        self._insert_string('{\n')
+        self._insert_string('    STATE_MACHINE_CAPITALIZED_NAME *me = &STATE_MACHINE_NAME;\n')
+        constructor_code: str = self.notes_dict['constructor_code']['y:UMLNoteNode']['y:NodeLabel']['#text']
+        self._insert_string('     ' + '\n    '.join(
+            [v for v in constructor_code.replace('\r', '').split('\n')[1:] if v.strip() != '\n']
+        ))
+        self._insert_string('\n')
+        self._insert_string('    QHsm_ctor(&me->super, Q_STATE_CAST(&STATE_MACHINE_CAPITALIZED_NAME_initial));\n')
+        self._insert_string('}\n')
+        self._insert_string(
+            '/*.$enddef${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/\n')
+
+    def _write_initial(self):
+        self._insert_string(
+            '/*.$define${SMs::STATE_MACHINE_CAPITALIZED_NAME} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/\n')
+        self._insert_string(
+            '/*.${SMs::STATE_MACHINE_CAPITALIZED_NAME} ....................................................*/\n')
+        self._insert_string(
+            '/*.${SMs::STATE_MACHINE_CAPITALIZED_NAME::SM} ................................................*/\n')
+        self._insert_string(
+            'QState STATE_MACHINE_CAPITALIZED_NAME_initial(STATE_MACHINE_CAPITALIZED_NAME * const me, void const * const par) {\n')
+        self._insert_string('    /*.${SMs::STATE_MACHINE_CAPITALIZED_NAME::SM::initial} */\n')
+        self._insert_string('    %s\n' % self.start_action)
+        self._insert_string(
+            '    return Q_TRAN(&STATE_MACHINE_CAPITALIZED_NAME_%s);\n' % self.id_to_name[self.start_node])
+        self._insert_string('}\n')
 
     def _write_guard_comment(self, f, state_path: str, event_name: str, guard: str):
         prefix = '            /*.${%s::%s::[' % (state_path, event_name)
@@ -78,7 +91,7 @@ class CppFileWriter:
             for line in input_file.readlines():
                 self._insert_string(line)
 
-    def _write_state(self, f, state: State, state_path: str):
+    def _write_states_recursively(self, f, state: State, state_path: str):
         state_path = state_path + '::' + state.name
         state_comment = '/*.${' + state_path + '} '
         state_comment = state_comment + '.' * (76 - len(state_comment)) + '*/\n'
@@ -146,7 +159,7 @@ class CppFileWriter:
         self._insert_string('}\n')
 
         for child_state in state.childs:
-            self._write_state(f, child_state, state_path)
+            self._write_states_recursively(f, child_state, state_path)
 
     def _write_trigger(self, f, trigger: Trigger, offset = ''):
         if trigger.action:
