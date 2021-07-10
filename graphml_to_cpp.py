@@ -41,9 +41,7 @@ class CppFileWriter:
         self._insert_string('{\n')
         self._insert_string('    STATE_MACHINE_CAPITALIZED_NAME *me = &STATE_MACHINE_NAME;\n')
         constructor_code: str = self.notes_dict['constructor_code']['y:UMLNoteNode']['y:NodeLabel']['#text']
-        self._insert_string('     ' + '\n    '.join(
-            [v for v in constructor_code.replace('\r', '').split('\n')[1:] if v.strip() != '\n']
-        ))
+        self._insert_string('     ' + '\n    '.join(constructor_code.replace('\r', '').split('\n')[1:]))
         self._insert_string('\n')
         self._insert_string('    QHsm_ctor(&me->super, Q_STATE_CAST(&STATE_MACHINE_CAPITALIZED_NAME_initial));\n')
         self._insert_string('}\n')
