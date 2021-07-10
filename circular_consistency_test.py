@@ -96,5 +96,11 @@ class CircularConsistencyTest(unittest.TestCase):
             sm2_cpp_content = f.read()
         self.assertEqual(sm1_cpp_content, sm2_cpp_content)
 
+        with open('./testdata/oregonPlayer.h', 'r') as f:
+            sm1_cpp_content = f.read()
+        with open('./testdata/test_output/oregonPlayer_new.h', 'r') as f:
+            sm2_cpp_content = f.read()
+        self.assertEqual(sm1_cpp_content, sm2_cpp_content)
+
 if __name__ == '__main__':
     unittest.main()

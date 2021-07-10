@@ -4,20 +4,23 @@ import re
 from graphml import *
 from typing import List, Tuple
 from stateclasses import State, Trigger
+from create_qm import get_enum
 
 class CppFileWriter:
     id_to_name = {}
     notes_dict = {}
     f = None
+    all_signals = []
 
-    def __init__(self, sm_name: str, start_node: str, start_action: str, states: List[State], notes: List[Dict[str, Any]]):
+    def __init__(self, sm_name: str, start_node: str, start_action: str, states: List[State], notes: List[Dict[str, Any]], player_signal: List[str]):
         self.sm_name = sm_name
+        self.player_signal = player_signal
+        self.notes_dict = {note['id']: note for note in notes}
+        self.start_node = start_node
+        self.start_action = start_action
+        self.states = states
         for state in states:
             self.id_to_name[state.id] = state.name
-            self.notes_dict = {note['id']: note for note in notes}
-            self.start_node = start_node
-            self.start_action = start_action
-            self.states = states
 
     def write_to_file(self, folder: str):
         with open(os.path.join(folder, '%s_new.cpp' % self.sm_name), 'w') as f:
@@ -25,10 +28,53 @@ class CppFileWriter:
             self._insert_file_template('preamble_c.txt')
             self._write_constructor()
             self._write_initial()
-            self._write_states_recursively(f, self.states[0], 'SMs::%s::SM' % self._sm_capitalized_name())
+            self._write_states_definitions_recursively(self.states[0], 'SMs::%s::SM' % self._sm_capitalized_name())
             self._insert_file_template('footer_c.txt')
+            self.f = None
 
-        self.f = None
+        with open(os.path.join(folder, '%s_new.h' % self.sm_name), 'w') as f:
+            self.f = f
+            self._insert_file_template('preamble_h.txt')
+
+            self._insert_string('//Start of h code from diagram\n')
+            self._insert_string('\n'.join(self.notes_dict['raw_h_code']['y:UMLNoteNode']['y:NodeLabel']['#text'].split('\n')[1:]) + '\n')
+            self._insert_string('//End of h code from diagram\n\n\n')
+
+            self._write_full_line_comment('.$declare${SMs::STATE_MACHINE_CAPITALIZED_NAME}', 'v')
+            self._write_full_line_comment('.${SMs::STATE_MACHINE_CAPITALIZED_NAME}', '.')
+            self._insert_string('typedef struct {\n')
+            self._insert_string('/* protected: */\n')
+            self._insert_string('    QHsm super;\n')
+            self._insert_string('\n')
+            self._insert_string('/* public: */\n')
+            constructor_fields: str = self.notes_dict['state_fields']['y:UMLNoteNode']['y:NodeLabel']['#text']
+            self._insert_string('    ' + '\n    '.join(constructor_fields.split('\n')[1:]) + '\n')
+            self._insert_string('} STATE_MACHINE_CAPITALIZED_NAME;\n\n')
+            self._insert_string('/* protected: */\n')
+            self._insert_string('QState STATE_MACHINE_CAPITALIZED_NAME_initial(STATE_MACHINE_CAPITALIZED_NAME * const me, void const * const par);\n')
+            self._write_states_declarations_recursively(self.states[0])
+            self._insert_string('\n#ifdef DESKTOP\n')
+            self._insert_string(
+                'QState STATE_MACHINE_CAPITALIZED_NAME_final(STATE_MACHINE_CAPITALIZED_NAME * const me, QEvt const * const e);\n')
+            self._insert_string('#endif /* def DESKTOP */\n\n')
+            self._write_full_line_comment('.$enddecl${SMs::STATE_MACHINE_CAPITALIZED_NAME}', '^')
+            self._insert_string('\nstatic STATE_MACHINE_CAPITALIZED_NAME STATE_MACHINE_NAME; /* the only instance of the STATE_MACHINE_CAPITALIZED_NAME class */\n\n\n\n')
+
+            self._insert_string('typedef struct STATE_MACHINE_NAMEQEvt {\n')
+            self._insert_string('    QEvt super;\n')
+            event_fields: str = self.notes_dict['event_fields']['y:UMLNoteNode']['y:NodeLabel']['#text']
+            self._insert_string('    ' + '\n    '.join(event_fields.split('\n')[1:]) + '\n')
+            self._insert_string('} STATE_MACHINE_NAMEQEvt;\n\n')
+            self._insert_string(get_enum(self.player_signal) + '\n')
+            self._insert_string('extern QHsm * const the_STATE_MACHINE_NAME; /* opaque pointer to the STATE_MACHINE_NAME HSM */\n\n')
+            self._write_full_line_comment('.$declare${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', 'v')
+            self._write_full_line_comment('.${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', '.')
+            self._insert_string('void STATE_MACHINE_CAPITALIZED_NAME_ctor(\n')
+            constructor_fields: str = self.notes_dict['constructor_fields']['y:UMLNoteNode']['y:NodeLabel']['#text']
+            self._insert_string('    ' + ',\n    '.join(constructor_fields.replace(';', '').split('\n')[1:]) + ');\n')
+            self._write_full_line_comment('.$enddecl${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', '^')
+            self._insert_file_template('footer_h.txt')
+            self.f = None
 
     def _write_constructor(self):
         self._write_full_line_comment('.$define${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', 'v')
@@ -86,11 +132,11 @@ class CppFileWriter:
             for line in input_file.readlines():
                 self._insert_string(line)
 
-    def _write_states_recursively(self, f, state: State, state_path: str):
+    def _write_states_definitions_recursively(self, state: State, state_path: str):
         state_path = state_path + '::' + state.name
         state_comment = '/*.${' + state_path + '} '
         state_comment = state_comment + '.' * (76 - len(state_comment)) + '*/\n'
-        f.write(state_comment)
+        self.f.write(state_comment)
         self._insert_string('QState STATE_MACHINE_CAPITALIZED_NAME_%s(STATE_MACHINE_CAPITALIZED_NAME * const me, QEvt const * const e) {\n' % state.name)
         self._insert_string('    QState status_;\n')
         self._insert_string('    switch (e->sig) {\n')
@@ -125,17 +171,17 @@ class CppFileWriter:
             self._insert_string('        /*.${%s::%s} */\n' % (state_path, event_name))
             self._insert_string('        case %s_SIG: {\n' % event_name)
             if len(triggers) == 1:
-                self._write_trigger(f, triggers[0])
+                self._write_trigger(self.f, triggers[0])
             elif len(triggers) == 2:
                 if triggers[0].guard == 'else':
                     triggers[0], triggers[1] = triggers[1], triggers[0]
-                self._write_guard_comment(f, state_path, event_name, triggers[0].guard)
+                self._write_guard_comment(self.f, state_path, event_name, triggers[0].guard)
                 self._insert_string('            if (%s) {\n' % triggers[0].guard)
-                self._write_trigger(f, triggers[0], '    ')
+                self._write_trigger(self.f, triggers[0], '    ')
                 self._insert_string('            }\n')
-                self._write_guard_comment(f, state_path, event_name, triggers[1].guard)
+                self._write_guard_comment(self.f, state_path, event_name, triggers[1].guard)
                 self._insert_string('            else {\n')
-                self._write_trigger(f, triggers[1], '    ')
+                self._write_trigger(self.f, triggers[1], '    ')
                 self._insert_string('            }\n')
             else:
                 self._insert_string('!!! "else if" guards are not supported !!!')
@@ -154,7 +200,18 @@ class CppFileWriter:
         self._insert_string('}\n')
 
         for child_state in state.childs:
-            self._write_states_recursively(f, child_state, state_path)
+            self._write_states_definitions_recursively(child_state, state_path)
+
+        for trigger in state.trigs:
+            if '?def' in trigger.name:
+                continue
+            if not trigger.name in self.all_signals:
+                self.all_signals.append(trigger.name)
+
+    def _write_states_declarations_recursively(self, state: State):
+        self._insert_string('QState STATE_MACHINE_CAPITALIZED_NAME_%s(STATE_MACHINE_CAPITALIZED_NAME * const me, QEvt const * const e);\n' % state.name)
+        for child_state in state.childs:
+            self._write_states_declarations_recursively(child_state)
 
     def _write_trigger(self, f, trigger: Trigger, offset = ''):
         if trigger.action:

@@ -94,7 +94,7 @@ def main(filenames: Union[List[str], str]):
                                                                             start_action, notes, qm_states,
                                                                             coords)
         # TODO(aeremin) Extract to separate file.
-        CppFileWriter(modelname, start_node, start_action, qm_states, notes).write_to_file(os.path.dirname(filename))
+        CppFileWriter(modelname, start_node, start_action, qm_states, notes, player_signal).write_to_file(os.path.dirname(filename))
 
     # create file with final code
     try:
