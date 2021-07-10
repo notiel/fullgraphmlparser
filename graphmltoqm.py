@@ -94,8 +94,7 @@ def main(filenames: Union[List[str], str]):
                                                                             start_action, notes, qm_states,
                                                                             coords)
         # TODO(aeremin) Extract to separate file.
-        with open(os.path.splitext(filename)[0] + '_new.cpp', 'w') as f:
-            CppFileWriter(modelname).write_to_file(f, start_node, start_action, qm_states, notes)
+        CppFileWriter(modelname, start_node, start_action, qm_states, notes).write_to_file(os.path.dirname(filename))
 
     # create file with final code
     try:
