@@ -3,6 +3,7 @@ import qm
 import graphml as gr
 import create_qm as cr
 import service_files
+from graphml_to_cpp import CppFileWriter
 from logger import logging
 import sys
 import os
@@ -92,6 +93,9 @@ def main(filenames: Union[List[str], str]):
         event_fields, hcode, cppcode, ctor_code, ctor_fields = cr.create_qm(qm_package, modelname, start_node,
                                                                             start_action, notes, qm_states,
                                                                             coords)
+        # TODO(aeremin) Extract to separate file.
+        CppFileWriter(modelname, start_node, start_action, qm_states, notes, player_signal).write_to_file(os.path.dirname(filename))
+
     # create file with final code
     try:
         cr.finish_qm(qm_model, qm_package, os.path.splitext(filenames[0])[0], modelnames, player_signal, event_fields, hcode, cppcode,

@@ -4,9 +4,6 @@ import stat
 import subprocess
 import sys
 import unittest
-from shutil import copyfile
-
-import pytest
 
 import cpp_to_graphml
 import graphmltoqm
@@ -89,6 +86,19 @@ class CircularConsistencyTest(unittest.TestCase):
         with open('./testdata/oregonPlayer.cpp', 'r') as f:
             sm1_cpp_content = f.read()
         with open('./testdata/test_output/oregonPlayer.cpp', 'r') as f:
+            sm2_cpp_content = f.read()
+        self.assertEqual(sm1_cpp_content, sm2_cpp_content)
+
+        # Compare Samek's vs home-brewn implementation of the generator
+        with open('./testdata/oregonPlayer.cpp', 'r') as f:
+            sm1_cpp_content = f.read()
+        with open('./testdata/test_output/oregonPlayer_new.cpp', 'r') as f:
+            sm2_cpp_content = f.read()
+        self.assertEqual(sm1_cpp_content, sm2_cpp_content)
+
+        with open('./testdata/oregonPlayer.h', 'r') as f:
+            sm1_cpp_content = f.read()
+        with open('./testdata/test_output/oregonPlayer_new.h', 'r') as f:
             sm2_cpp_content = f.read()
         self.assertEqual(sm1_cpp_content, sm2_cpp_content)
 
