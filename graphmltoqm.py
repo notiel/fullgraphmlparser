@@ -1,7 +1,7 @@
 import xmltodict
 import qm
 import graphml as gr
-import create_qm as cr
+# import create_qm as cr
 import service_files
 from graphml_to_cpp import CppFileWriter
 from logger import logging
@@ -9,8 +9,8 @@ import sys
 import os
 from typing import Union, List
 
-# test1
 
+# test1
 def get_states_from_graphml(filename: str):
     """
     creates state list
@@ -42,11 +42,15 @@ def get_states_from_graphml(filename: str):
     _ = qm.update_states_with_edges(qm_states, flat_edges, start, player_signal, coords[0], coords[1])
     return qm_states, coords[0], coords[1]
 
+
 # test2
-
 def main(filenames: Union[List[str], str]):
-
-    qm_model, qm_package = cr.prepare_qm()
+    """
+    creates cpp and h code files from graphml diagram
+    :param filenames: list of graphmlm-files to convert
+    :return:
+    """
+    # qm_model, qm_package = cr.prepare_qm()
     player_signal = list()
     event_fields = dict()
     ctor_fields = dict()
@@ -90,18 +94,18 @@ def main(filenames: Union[List[str], str]):
         # get notes
         notes = [node for node in flat_nodes if gr.is_node_a_note(node)]
         # create qm data
-        event_fields, hcode, cppcode, ctor_code, ctor_fields = cr.create_qm(qm_package, modelname, start_node,
-                                                                            start_action, notes, qm_states,
-                                                                            coords)
+        # event_fields, hcode, cppcode, ctor_code, ctor_fields = cr.create_qm(qm_package, modelname, start_node,
+        #                                                                    start_action, notes, qm_states,
+        #                                                                    coords)
         # TODO(aeremin) Extract to separate file.
         CppFileWriter(modelname, start_node, start_action, qm_states, notes, player_signal).write_to_file(os.path.dirname(filename))
 
     # create file with final code
-    try:
-        cr.finish_qm(qm_model, qm_package, os.path.splitext(filenames[0])[0], modelnames, player_signal, event_fields, hcode, cppcode,
-                     ctor_code, ctor_fields)
-    except PermissionError:
-        logging.fatal("File already exists and is locked")
+    #try:
+        #cr.finish_qm(qm_model, qm_package, os.path.splitext(filenames[0])[0], modelnames, player_signal, event_fields, hcode, cppcode,
+        #             ctor_code, ctor_fields)
+    #except PermissionError:
+    #    logging.fatal("File already exists and is locked")
     service_files.create_files(os.path.dirname(filenames[0]), player_signal, modelname, functions)
 
 

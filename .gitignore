@@ -4,3 +4,5 @@ __*
 *.qm
 __pycache__
 venv/
+
+!.*
