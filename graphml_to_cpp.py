@@ -15,7 +15,22 @@ class CppFileWriter:
     def __init__(self, sm_name: str, start_node: str, start_action: str, states: List[State], notes: List[Dict[str, Any]], player_signal: List[str]):
         self.sm_name = sm_name
         self.player_signal = player_signal
-        self.notes_dict = {note['id']: note for note in notes}
+
+        notes_mapping = [('Code for h-file', 'raw_h_code'),
+         ('Constructor fields', 'constructor_fields'),
+         ('State fields', 'state_fields'),
+         ('Constructor code', 'constructor_code'),
+         ('Event fields', 'event_fields')]
+        self.notes_dict = {key: '' for _, key in notes_mapping}
+
+        for note in notes:
+            for prefix, key in notes_mapping:
+                if note['y:UMLNoteNode']['y:NodeLabel']['#text'].startswith(prefix):
+                    self.notes_dict[key] = note['y:UMLNoteNode']['y:NodeLabel']['#text']
+
+        for key in self.notes_dict:
+            print('%s --> %s' % (key, self.notes_dict[key]))
+
         self.start_node = start_node
         self.start_action = start_action
         self.states = states
@@ -37,7 +52,7 @@ class CppFileWriter:
             self._insert_file_template('preamble_h.txt')
 
             self._insert_string('//Start of h code from diagram\n')
-            self._insert_string('\n'.join(self.notes_dict['raw_h_code']['y:UMLNoteNode']['y:NodeLabel']['#text'].split('\n')[1:]) + '\n')
+            self._insert_string('\n'.join(self.notes_dict['raw_h_code'].split('\n')[1:]) + '\n')
             self._insert_string('//End of h code from diagram\n\n\n')
 
             self._write_full_line_comment('.$declare${SMs::STATE_MACHINE_CAPITALIZED_NAME}', 'v')
@@ -47,7 +62,7 @@ class CppFileWriter:
             self._insert_string('    QHsm super;\n')
             self._insert_string('\n')
             self._insert_string('/* public: */\n')
-            constructor_fields: str = self.notes_dict['state_fields']['y:UMLNoteNode']['y:NodeLabel']['#text']
+            constructor_fields: str = self.notes_dict['state_fields']
             self._insert_string('    ' + '\n    '.join(constructor_fields.split('\n')[1:]) + '\n')
             self._insert_string('} STATE_MACHINE_CAPITALIZED_NAME;\n\n')
             self._insert_string('/* protected: */\n')
@@ -62,7 +77,7 @@ class CppFileWriter:
 
             self._insert_string('typedef struct STATE_MACHINE_NAMEQEvt {\n')
             self._insert_string('    QEvt super;\n')
-            event_fields: str = self.notes_dict['event_fields']['y:UMLNoteNode']['y:NodeLabel']['#text']
+            event_fields: str = self.notes_dict['event_fields']
             self._insert_string('    ' + '\n    '.join(event_fields.split('\n')[1:]) + '\n')
             self._insert_string('} STATE_MACHINE_NAMEQEvt;\n\n')
             self._insert_string(get_enum(self.player_signal) + '\n')
@@ -70,7 +85,7 @@ class CppFileWriter:
             self._write_full_line_comment('.$declare${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', 'v')
             self._write_full_line_comment('.${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', '.')
             self._insert_string('void STATE_MACHINE_CAPITALIZED_NAME_ctor(\n')
-            constructor_fields: str = self.notes_dict['constructor_fields']['y:UMLNoteNode']['y:NodeLabel']['#text']
+            constructor_fields: str = self.notes_dict['constructor_fields']
             self._insert_string('    ' + ',\n    '.join(constructor_fields.replace(';', '').split('\n')[1:]) + ');\n')
             self._write_full_line_comment('.$enddecl${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', '^')
             self._insert_file_template('footer_h.txt')
@@ -80,11 +95,11 @@ class CppFileWriter:
         self._write_full_line_comment('.$define${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', 'v')
         self._write_full_line_comment('.${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', '.')
         self._insert_string('void STATE_MACHINE_CAPITALIZED_NAME_ctor(\n')
-        constructor_fields: str = self.notes_dict['constructor_fields']['y:UMLNoteNode']['y:NodeLabel']['#text']
+        constructor_fields: str = self.notes_dict['constructor_fields']
         self._insert_string('    ' + ',\n    '.join(constructor_fields.replace(';', '').split('\n')[1:]) + ')\n')
         self._insert_string('{\n')
         self._insert_string('    STATE_MACHINE_CAPITALIZED_NAME *me = &STATE_MACHINE_NAME;\n')
-        constructor_code: str = self.notes_dict['constructor_code']['y:UMLNoteNode']['y:NodeLabel']['#text']
+        constructor_code: str = self.notes_dict['constructor_code']
         self._insert_string('     ' + '\n    '.join(constructor_code.replace('\r', '').split('\n')[1:]))
         self._insert_string('\n')
         self._insert_string('    QHsm_ctor(&me->super, Q_STATE_CAST(&STATE_MACHINE_CAPITALIZED_NAME_initial));\n')
