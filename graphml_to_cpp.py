@@ -28,9 +28,6 @@ class CppFileWriter:
                 if note['y:UMLNoteNode']['y:NodeLabel']['#text'].startswith(prefix):
                     self.notes_dict[key] = note['y:UMLNoteNode']['y:NodeLabel']['#text']
 
-        for key in self.notes_dict:
-            print('%s --> %s' % (key, self.notes_dict[key]))
-
         self.start_node = start_node
         self.start_action = start_action
         self.states = states
