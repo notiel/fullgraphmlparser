@@ -123,10 +123,7 @@ def create_actions(raw_triggers: str, source: str, player_signal: List[str], fun
             action = '\n'.join(line[indent:] for line in lines)
             action = action.rstrip()
         actions.append(Trigger(name=trigger_name, action=action, source=source, type="internal", guard=guard,
-                               target="", id=trigger_id, x=0, y=internal_trigger_height * trigger_id,
-                               dx=len(trigger_name) + internal_trigger_delta, dy=0, points=[], action_x=0,
-                               action_y=5 * trigger_id - 2,
-                               action_width=len(trigger_name) + action_delta))
+                               target="", id=trigger_id))
     # add functions to function list
     get_functions(raw_triggers, functions)
     return actions, player_signal
@@ -235,8 +232,7 @@ def create_states_from_nodes(nodes: [dict], coords: tuple, player_signal, functi
     return states, player_signal
 
 
-def update_states_with_edges(states: [State], flat_edges: [dict], start_state: str, player_signal: [str], min_x: int,
-                             min_y: int):
+def update_states_with_edges(states: [State], flat_edges: [dict], start_state: str, player_signal: [str]):
     """
     function parses events on edges and adds them as external triggers to corresponding state (excluding start_edge)
     and recognizes and adds special labels to a choice edgea
@@ -272,22 +268,14 @@ def update_states_with_edges(states: [State], flat_edges: [dict], start_state: s
                         trigger_name = ""
                         trigger_action = ""
                         guard = ""
-                    x, y, dx, dy, points = get_edge_coordinates(edge)
-                    new_points = []
-                    for point in points:
-                        new_points.append(((point[0] - min_x) // divider, (point[1] - min_y) // divider))
-                    action_x, action_y, action_width = get_edge_label_coordinates(edge)
+
                     trig_type = "external"
                     if source_state.type == "choice":
                         trig_type = "choice_result"
                     if target_state.type == "choice":
                         trig_type = "choice_start"
                     trigger = Trigger(name=trigger_name, type=trig_type, guard=guard, source=old_source,
-                                      target=old_target, action=trigger_action,
-                                      id=0,
-                                      x=x // divider, y=y // divider, dx=dx // divider, dy=dy // divider,
-                                      points=new_points, action_x=action_x // divider, action_y=action_y // divider,
-                                      action_width=action_width // divider + 2)
+                                      target=old_target, action=trigger_action,id=0)
                     source_state.trigs.append(trigger)
                     if trigger_name and trigger_name not in player_signal:
                         player_signal.append(trigger_name)
@@ -316,8 +304,7 @@ def add_terminal_trigger(states):
     terminate: State = get_state_by_id(states, "last", "old")
     first: State = get_state_by_id(states, "", "old")
     trigger: Trigger = Trigger(name="TERMINATE?def DESKTOP", type="external", guard="", source=first.id,
-                               target=terminate.id, action="", id=0, x=0, y=first.height // 2,
-                               dx=0, dy=-terminal_h // 2, points=[], action_x=-5, action_y=2, action_width=10)
+                               target=terminate.id, action="", id=0)
     first.trigs.append(trigger)
 
 
@@ -388,7 +375,7 @@ def is_state_a_child_by_coord(x, y, width, height, parent: State) -> bool:
     return False
 
 
-def is_state_a_child_by_label(parent: State, label: str)-> bool:
+def is_state_a_child_by_label(parent: State, label: str) -> bool:
     """
     ckecks if parent state is really parent for child state
     :param parent: is a parent state?
@@ -501,29 +488,3 @@ def get_graphml_coords_by_state_name(states: List[State], name: str, minx: float
             return (state.x - 2) * divider + minx, (state.y - 2) * divider + miny, \
                    state.width * divider, state.height * divider
     return 0, 0, 0, 0
-
-
-def get_edge_coords_by_state_and_name(states: List[State], name_state: str, name_edge: str, minx: int, miny: int) -> \
-        Tuple[int, int, int, int, List[Tuple[int, int]]]:
-    """
-    get coords of edge by edge name and source name
-    :param miny: min y of scheme
-    :param minx:  min x of scheme
-    :param states: list of states
-    :param name_state: name of state
-    :param name_edge: name of edge
-    :return:
-    """
-    for state in states:
-        if state.name == name_state:
-            for trig in state.trigs:
-                if trig.name == name_edge:
-                    sx = trig.x * divider
-                    sy = trig.y * divider
-                    tx = trig.dx * divider
-                    ty = trig.dy * divider
-                    points = list()
-                    for point in trig.points:
-                        points.append((point[0]*divider + minx, point[1]*divider + miny))
-                    return sx, sy, tx, ty, points
-    return 0, 0, 0, 0, []

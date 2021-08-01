@@ -25,14 +25,6 @@ class Trigger:
     target: str
     action: str
     id: int
-    x: int
-    y: int
-    dx: int
-    dy: int
-    points: List[Tuple[int, int]]
-    action_x: int
-    action_y: int
-    action_width: int
     type: str = "internal"
     guard: str = ""
 

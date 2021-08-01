@@ -39,7 +39,7 @@ def get_states_from_graphml(filename: str):
         logging.error('UML-diagram %s.graphml does not have start node' % filename)
         return list(), 0, 0
     # add external trigger and update list of signals with them
-    _ = qm.update_states_with_edges(qm_states, flat_edges, start, player_signal, coords[0], coords[1])
+    _ = qm.update_states_with_edges(qm_states, flat_edges, start, player_signal)
     return qm_states, coords[0], coords[1]
 
 
@@ -90,7 +90,7 @@ def main(filenames: Union[List[str], str]):
             logging.error('UML-diagram %s.graphml does not have start node' % filename)
             continue
         # add external trigger and update list of signals with them
-        player_signal = qm.update_states_with_edges(qm_states, flat_edges, start, player_signal, coords[0], coords[1])
+        player_signal = qm.update_states_with_edges(qm_states, flat_edges, start, player_signal)
         # get notes
         notes = [node for node in flat_nodes if gr.is_node_a_note(node)]
         # create qm data
@@ -106,7 +106,7 @@ def main(filenames: Union[List[str], str]):
         #             ctor_code, ctor_fields)
     #except PermissionError:
     #    logging.fatal("File already exists and is locked")
-    service_files.create_files(os.path.dirname(filenames[0]), player_signal, modelname, functions)
+    #service_files.create_files(os.path.dirname(filenames[0]), player_signal, modelname, functions)
 
 
 if __name__ == '__main__':
