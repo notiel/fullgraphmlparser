@@ -151,9 +151,9 @@ def create_state_from_node(node: dict, node_type: str, min_x: int, min_y: int, s
     (triggers, player_signal) = create_actions(actions, node_id, player_signal, functions)
     state_entry: List[str] = [trig.action for trig in triggers if trig.name == 'entry']
     state_exit: List[str] = [trig.action for trig in triggers if trig.name == 'exit']
-    state_entry_str: str = '#ifdef DESKTOP\n    printf("Entered state %s");\n#endif /* def DESKTOP */' % name
+    state_entry_str: str = '#ifdef DESKTOP\nprintf("Entered state %s");\n#endif /* def DESKTOP */\n' % name
     state_entry_str += state_entry[0] if state_entry else ""
-    state_exit_str: str = '#ifdef DESKTOP\n    printf("Exited state %s");\n#endif /* def DESKTOP */' % name
+    state_exit_str: str = '#ifdef DESKTOP\nprintf("Exited state %s");\n#endif /* def DESKTOP */\n' % name
     state_exit_str += state_exit[0] if state_exit else ""
     triggers: List[Trigger] = [trig for trig in triggers if trig.name != 'entry' and trig.name != 'exit']
     x, y, width, height = get_coordinates(node)

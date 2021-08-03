@@ -364,6 +364,8 @@ def is_edge_correct(edge: Dict[str, Any], edge_type: str) -> bool:
         return False
     if 'y:EdgeLabel' not in edge[edge_type].keys():
         return False
+    if not isinstance(edge[edge_type]['y:EdgeLabel'], dict):
+        return False
     return True
 
 
