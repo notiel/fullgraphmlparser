@@ -118,16 +118,18 @@ QState OregonPlayer_active(OregonPlayer * const me, QEvt const * const e) {
         /*.${SMs::OregonPlayer::SM::global::active} */
         case Q_ENTRY_SIG: {
             #ifdef DESKTOP
-                printf("Entered state active");
+            printf("Entered state active");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
         /*.${SMs::OregonPlayer::SM::global::active} */
         case Q_EXIT_SIG: {
             #ifdef DESKTOP
-                printf("Exited state active");
+            printf("Exited state active");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
@@ -145,16 +147,18 @@ QState OregonPlayer_alive(OregonPlayer * const me, QEvt const * const e) {
         /*.${SMs::OregonPlayer::SM::global::active::alive} */
         case Q_ENTRY_SIG: {
             #ifdef DESKTOP
-                printf("Entered state alive");
+            printf("Entered state alive");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
         /*.${SMs::OregonPlayer::SM::global::active::alive} */
         case Q_EXIT_SIG: {
             #ifdef DESKTOP
-                printf("Exited state alive");
+            printf("Exited state alive");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
@@ -172,16 +176,18 @@ QState OregonPlayer_immune(OregonPlayer * const me, QEvt const * const e) {
         /*.${SMs::OregonPlayer::SM::global::active::alive::immune} */
         case Q_ENTRY_SIG: {
             #ifdef DESKTOP
-                printf("Entered state immune");
+            printf("Entered state immune");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
         /*.${SMs::OregonPlayer::SM::global::active::alive::immune} */
         case Q_EXIT_SIG: {
             #ifdef DESKTOP
-                printf("Exited state immune");
+            printf("Exited state immune");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
@@ -216,16 +222,18 @@ QState OregonPlayer_temp_immune(OregonPlayer * const me, QEvt const * const e) {
         /*.${SMs::OregonPlayer::SM::global::active::alive::immune::temp_immune} */
         case Q_ENTRY_SIG: {
             #ifdef DESKTOP
-                printf("Entered state temp_immune");
+            printf("Entered state temp_immune");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
         /*.${SMs::OregonPlayer::SM::global::active::alive::immune::temp_immune} */
         case Q_EXIT_SIG: {
             #ifdef DESKTOP
-                printf("Exited state temp_immune");
+            printf("Exited state temp_immune");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
@@ -248,16 +256,18 @@ QState OregonPlayer_blessed(OregonPlayer * const me, QEvt const * const e) {
         /*.${SMs::OregonPlayer::SM::global::active::alive::immune::blessed} */
         case Q_ENTRY_SIG: {
             #ifdef DESKTOP
-                printf("Entered state blessed");
+            printf("Entered state blessed");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
         /*.${SMs::OregonPlayer::SM::global::active::alive::immune::blessed} */
         case Q_EXIT_SIG: {
             #ifdef DESKTOP
-                printf("Exited state blessed");
+            printf("Exited state blessed");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
@@ -275,16 +285,18 @@ QState OregonPlayer_healthy(OregonPlayer * const me, QEvt const * const e) {
         /*.${SMs::OregonPlayer::SM::global::active::alive::healthy} */
         case Q_ENTRY_SIG: {
             #ifdef DESKTOP
-                printf("Entered state healthy");
+            printf("Entered state healthy");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
         /*.${SMs::OregonPlayer::SM::global::active::alive::healthy} */
         case Q_EXIT_SIG: {
             #ifdef DESKTOP
-                printf("Exited state healthy");
+            printf("Exited state healthy");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
@@ -337,16 +349,18 @@ QState OregonPlayer_agony(OregonPlayer * const me, QEvt const * const e) {
         /*.${SMs::OregonPlayer::SM::global::active::alive::agony} */
         case Q_ENTRY_SIG: {
             #ifdef DESKTOP
-                printf("Entered state agony");
+            printf("Entered state agony");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
         /*.${SMs::OregonPlayer::SM::global::active::alive::agony} */
         case Q_EXIT_SIG: {
             #ifdef DESKTOP
-                printf("Exited state agony");
+            printf("Exited state agony");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
@@ -395,16 +409,18 @@ QState OregonPlayer_ghoul(OregonPlayer * const me, QEvt const * const e) {
         /*.${SMs::OregonPlayer::SM::global::active::ghoul} */
         case Q_ENTRY_SIG: {
             #ifdef DESKTOP
-                printf("Entered state ghoul");
+            printf("Entered state ghoul");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
         /*.${SMs::OregonPlayer::SM::global::active::ghoul} */
         case Q_EXIT_SIG: {
             #ifdef DESKTOP
-                printf("Exited state ghoul");
+            printf("Exited state ghoul");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
@@ -428,16 +444,18 @@ QState OregonPlayer_ghoul_good(OregonPlayer * const me, QEvt const * const e) {
         /*.${SMs::OregonPlayer::SM::global::active::ghoul::ghoul_good} */
         case Q_ENTRY_SIG: {
             #ifdef DESKTOP
-                printf("Entered state ghoul_good");
+            printf("Entered state ghoul_good");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
         /*.${SMs::OregonPlayer::SM::global::active::ghoul::ghoul_good} */
         case Q_EXIT_SIG: {
             #ifdef DESKTOP
-                printf("Exited state ghoul_good");
+            printf("Exited state ghoul_good");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
@@ -455,16 +473,18 @@ QState OregonPlayer_ghoul_healing(OregonPlayer * const me, QEvt const * const e)
         /*.${SMs::OregonPlayer::SM::global::active::ghoul::ghoul_healing} */
         case Q_ENTRY_SIG: {
             #ifdef DESKTOP
-                printf("Entered state ghoul_healing");
+            printf("Entered state ghoul_healing");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
         /*.${SMs::OregonPlayer::SM::global::active::ghoul::ghoul_healing} */
         case Q_EXIT_SIG: {
             #ifdef DESKTOP
-                printf("Exited state ghoul_healing");
+            printf("Exited state ghoul_healing");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
@@ -495,16 +515,18 @@ QState OregonPlayer_wounded(OregonPlayer * const me, QEvt const * const e) {
         /*.${SMs::OregonPlayer::SM::global::active::ghoul::wounded} */
         case Q_ENTRY_SIG: {
             #ifdef DESKTOP
-                printf("Entered state wounded");
+            printf("Entered state wounded");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
         /*.${SMs::OregonPlayer::SM::global::active::ghoul::wounded} */
         case Q_EXIT_SIG: {
             #ifdef DESKTOP
-                printf("Exited state wounded");
+            printf("Exited state wounded");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
@@ -534,16 +556,18 @@ QState OregonPlayer_dead(OregonPlayer * const me, QEvt const * const e) {
         /*.${SMs::OregonPlayer::SM::global::active::dead} */
         case Q_ENTRY_SIG: {
             #ifdef DESKTOP
-                printf("Entered state dead");
+            printf("Entered state dead");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
         /*.${SMs::OregonPlayer::SM::global::active::dead} */
         case Q_EXIT_SIG: {
             #ifdef DESKTOP
-                printf("Exited state dead");
+            printf("Exited state dead");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
@@ -568,16 +592,18 @@ QState OregonPlayer_test(OregonPlayer * const me, QEvt const * const e) {
         /*.${SMs::OregonPlayer::SM::global::test} */
         case Q_ENTRY_SIG: {
             #ifdef DESKTOP
-                printf("Entered state test");
+            printf("Entered state test");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
         /*.${SMs::OregonPlayer::SM::global::test} */
         case Q_EXIT_SIG: {
             #ifdef DESKTOP
-                printf("Exited state test");
+            printf("Exited state test");
             #endif /* def DESKTOP */
+
             status_ = Q_HANDLED();
             break;
         }
