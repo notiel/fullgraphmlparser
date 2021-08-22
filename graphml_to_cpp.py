@@ -1,6 +1,7 @@
 import os.path
 
 import re
+from collections import defaultdict
 from graphml import *
 from typing import List, Tuple
 from stateclasses import State, Trigger
@@ -173,20 +174,34 @@ class CppFileWriter:
             self._insert_string('            break;\n')
             self._insert_string('        }\n')
 
-        triggers_merged: List[Tuple[str, List[Trigger]]] = []
-        for trigger in state.trigs:
+        name_to_triggers = defaultdict(list)
+        name_to_position = {}
+
+        for i, trigger in enumerate(state.trigs):
             if '?def' in trigger.name:
                 continue
-            if trigger.guard and len(triggers_merged) and triggers_merged[-1][0] == trigger.name:
-                triggers_merged[-1][1].append(trigger)
-            else:
-                triggers_merged.append((trigger.name, [trigger]))
+
+            name_to_triggers[trigger.name].append(trigger)
+            name_to_position[trigger.name] = i
+
+        triggers_merged: List[Tuple[str, List[Trigger]]] = sorted(
+            [(name, name_to_triggers[name]) for name in name_to_triggers],
+            key = lambda t: name_to_position[t[0]])
 
         for event_name, triggers in triggers_merged:
             self._insert_string('        /*.${%s::%s} */\n' % (state_path, event_name))
             self._insert_string('        case %s_SIG: {\n' % event_name)
             if len(triggers) == 1:
-                self._write_trigger(self.f, triggers[0])
+                if triggers[0].guard:
+                    self._write_guard_comment(self.f, state_path, event_name, triggers[0].guard)
+                    self._insert_string('            if (%s) {\n' % triggers[0].guard)
+                    self._write_trigger(self.f, triggers[0], '    ')
+                    self._insert_string('            }\n')
+                    self._insert_string('            else {\n')
+                    self._insert_string('                status_ = Q_UNHANDLED();\n')
+                    self._insert_string('            }\n')
+                else:
+                    self._write_trigger(self.f, triggers[0])
             elif len(triggers) == 2:
                 if triggers[0].guard == 'else':
                     triggers[0], triggers[1] = triggers[1], triggers[0]
