@@ -177,6 +177,10 @@ class CppFileWriter:
         name_to_triggers = defaultdict(list)
         name_to_position = {}
 
+        print(str(state.name))
+        print(str(state.id))
+        print(str(state.trigs))
+
         for i, trigger in enumerate(state.trigs):
             if '?def' in trigger.name:
                 continue
@@ -195,23 +199,23 @@ class CppFileWriter:
                 if triggers[0].guard:
                     self._write_guard_comment(self.f, state_path, event_name, triggers[0].guard)
                     self._insert_string('            if (%s) {\n' % triggers[0].guard)
-                    self._write_trigger(self.f, triggers[0], '    ')
+                    self._write_trigger(self.f, triggers[0], state_path, event_name, '    ')
                     self._insert_string('            }\n')
                     self._insert_string('            else {\n')
                     self._insert_string('                status_ = Q_UNHANDLED();\n')
                     self._insert_string('            }\n')
                 else:
-                    self._write_trigger(self.f, triggers[0])
+                    self._write_trigger(self.f, triggers[0], state_path, event_name)
             elif len(triggers) == 2:
                 if triggers[0].guard == 'else':
                     triggers[0], triggers[1] = triggers[1], triggers[0]
                 self._write_guard_comment(self.f, state_path, event_name, triggers[0].guard)
                 self._insert_string('            if (%s) {\n' % triggers[0].guard)
-                self._write_trigger(self.f, triggers[0], '    ')
+                self._write_trigger(self.f, triggers[0], state_path, event_name, '    ')
                 self._insert_string('            }\n')
                 self._write_guard_comment(self.f, state_path, event_name, triggers[1].guard)
                 self._insert_string('            else {\n')
-                self._write_trigger(self.f, triggers[1], '    ')
+                self._write_trigger(self.f, triggers[1], state_path, event_name, '    ')
                 self._insert_string('            }\n')
             else:
                 self._insert_string('!!! "else if" guards are not supported !!!')
@@ -243,14 +247,31 @@ class CppFileWriter:
         for child_state in state.childs:
             self._write_states_declarations_recursively(child_state)
 
-    def _write_trigger(self, f, trigger: Trigger, offset = ''):
-        if trigger.action:
+    def _write_trigger(self, f, trigger: Trigger, state_path: str, event_name: str, offset = ''):
+        if trigger.action and not trigger.type == 'choice_start':
             self._insert_string('\n'.join(
                 [offset + '            ' + line for line in trigger.action.strip().split('\n')]) + '\n')
         if trigger.type == 'internal':
             self._insert_string(offset + '            status_ = Q_HANDLED();\n')
-        elif trigger.type == 'external':
+        elif trigger.type == 'external' or trigger.type == 'choice_result':
             self._insert_string(offset + '            status_ = Q_TRAN(&STATE_MACHINE_CAPITALIZED_NAME_%s);\n' % self.id_to_name[
                                     trigger.target])
+        elif trigger.type == 'choice_start':
+            target_choice_node = next((s for s in self.states if s.id == trigger.target and s.type == 'choice'), None)
+            assert target_choice_node
+            assert len(target_choice_node.trigs) == 2
+            triggers = target_choice_node.trigs
+            if triggers[0].guard == 'else':
+                triggers[0], triggers[1] = triggers[1], triggers[0]
+            triggers[0].action = trigger.action + triggers[0].action
+            triggers[1].action = trigger.action + triggers[1].action
+            self._write_guard_comment(self.f, state_path, event_name, triggers[0].guard)
+            self._insert_string(offset + '            if (%s) {\n' % triggers[0].guard)
+            self._write_trigger(self.f, triggers[0], state_path, event_name, offset + '    ')
+            self._insert_string(offset + '            }\n')
+            self._write_guard_comment(self.f, state_path, event_name, triggers[1].guard)
+            self._insert_string(offset + '            else {\n')
+            self._write_trigger(self.f, triggers[1], state_path, event_name, offset + '    ')
+            self._insert_string(offset + '            }\n')
         else:
-            self._insert_string("// FIXME!!! Invalid trigger type\n")
+            self._insert_string("// FIXME!!! Invalid trigger type: %s\n" % trigger)
