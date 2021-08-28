@@ -29,9 +29,6 @@ class CppFileWriter:
                 if note['y:UMLNoteNode']['y:NodeLabel']['#text'].startswith(prefix):
                     self.notes_dict[key] = note['y:UMLNoteNode']['y:NodeLabel']['#text']
 
-        for key in self.notes_dict:
-            print('%s --> %s' % (key, self.notes_dict[key]))
-
         self.start_node = start_node
         self.start_action = start_action
         self.states = states
@@ -176,10 +173,6 @@ class CppFileWriter:
 
         name_to_triggers = defaultdict(list)
         name_to_position = {}
-
-        print(str(state.name))
-        print(str(state.id))
-        print(str(state.trigs))
 
         for i, trigger in enumerate(state.trigs):
             if '?def' in trigger.name:
