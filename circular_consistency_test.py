@@ -139,7 +139,10 @@ class CircularConsistencyTest(unittest.TestCase):
     def testSamekConsistencyCharacter(self):
         self.checkConsistency('character')
 
-    @unittest.skip("Whitespace differences")
+    @unittest.skip("Here new C++ generator generates correct, but going through Samek "
+                   "leads to guard for internal trigger being completely missing. "
+                   "It happens because create_qm.get_internal_trigger_code doesn't"
+                   "use trigger guard in any way.")
     def testSamekConsistencyHealth(self):
         self.checkConsistency('health')
 
