@@ -33,7 +33,7 @@ class SamekConsistencyTest(unittest.TestCase):
             sm2_h_content = test_utils.remove_boring_lines(f.read())
         self.assertEqual(sm1_h_content, sm2_h_content)
 
-    def testSamekConsistencyOregon(self):
+    def testOregonPlayer(self):
         self.checkConsistency('oregonPlayer')
 
     def testAbility(self):
