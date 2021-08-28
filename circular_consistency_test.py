@@ -141,7 +141,10 @@ class CircularConsistencyTest(unittest.TestCase):
     def testSamekConsistencyAbility(self):
         self.checkConsistency('ability')
 
-    @unittest.skip("QM fails to process it")
+    @unittest.skip("QM fails to process it: "
+                   "There is a weird INFLUENCE_AT_DOGAN choice coming from "
+                   "character::alive::neutral state. It has two branches with "
+                   "conditions (and no [else] branch).")
     def testSamekConsistencyCharacter(self):
         self.checkConsistency('character')
 
