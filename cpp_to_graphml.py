@@ -212,7 +212,7 @@ class HeaderParser:
             begin = None
             end = None
             for i, line in enumerate(lines):
-                # TODO: Deduplicate those lines with ones in create_qm.py
+                # TODO: Deduplicate those lines with ones in graphml_to_cpp.py
                 if '//Start of h code from diagram' in line:
                     begin = i + 1
                 if '//End of h code from diagram' in line:

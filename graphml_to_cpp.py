@@ -5,7 +5,23 @@ from collections import defaultdict
 from graphml import *
 from typing import List, Tuple
 from stateclasses import State, Trigger
-from create_qm import get_enum
+
+def get_enum(text_labels: List[str]) -> str:
+    """
+    prepares list of signals for enum structure for c language: joins them into one string comma and \n-separated
+    and adds _SIG to each signal
+     Example:
+        >>> get_enum(["EVENT1", "EVENT2"])
+        "EVENT1_SIG,
+         EVENT2_SIG"
+    :param text_labels:
+    :return: string
+    """
+    enum_labels: List[str] = [label + '_SIG' for label in text_labels]
+    enum = ',\n'.join(enum_labels)
+    enum = 'enum PlayerSignals {\nTICK_SEC_SIG = Q_USER_SIG,\n\n' + enum
+    enum = enum + ',\n\nLAST_USER_SIG\n};'
+    return enum
 
 class CppFileWriter:
     id_to_name = {}
