@@ -23,13 +23,13 @@ class SamekConsistencyTest(unittest.TestCase):
         # Compare Samek's vs home-brewn implementation of the generator
         with open('./testdata/%s.cpp' % test_case_name, 'r') as f:
             sm1_cpp_content = test_utils.remove_boring_lines(f.read())
-        with open('./testdata/test_output/%s_new.cpp' % test_case_name, 'r') as f:
+        with open('./testdata/test_output/%s.cpp' % test_case_name, 'r') as f:
             sm2_cpp_content = test_utils.remove_boring_lines(f.read())
         self.assertEqual(sm1_cpp_content, sm2_cpp_content)
 
         with open('./testdata/%s.h' % test_case_name, 'r') as f:
             sm1_h_content = test_utils.remove_boring_lines(f.read())
-        with open('./testdata/test_output/%s_new.h' % test_case_name, 'r') as f:
+        with open('./testdata/test_output/%s.h' % test_case_name, 'r') as f:
             sm2_h_content = test_utils.remove_boring_lines(f.read())
         self.assertEqual(sm1_h_content, sm2_h_content)
 

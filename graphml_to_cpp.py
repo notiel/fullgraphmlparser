@@ -40,7 +40,7 @@ class CppFileWriter:
                     trigger.guard = trigger.guard.strip()
 
     def write_to_file(self, folder: str):
-        with open(os.path.join(folder, '%s_new.cpp' % self.sm_name), 'w') as f:
+        with open(os.path.join(folder, '%s.cpp' % self.sm_name), 'w') as f:
             self.f = f
             self._insert_file_template('preamble_c.txt')
             self._write_constructor()
@@ -53,7 +53,7 @@ class CppFileWriter:
                 self._insert_string('//End of c code from diagram\n\n\n')
             self.f = None
 
-        with open(os.path.join(folder, '%s_new.h' % self.sm_name), 'w') as f:
+        with open(os.path.join(folder, '%s.h' % self.sm_name), 'w') as f:
             self.f = f
             self._insert_file_template('preamble_h.txt')
 
