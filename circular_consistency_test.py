@@ -152,10 +152,6 @@ class CircularConsistencyTest(unittest.TestCase):
     def testSamekConsistencyKaTet(self):
         self.checkConsistency('kaTet')
 
-    @unittest.skip("Samek generates invalid code here: repeating 'case TIME_TICK_1S_SIG:'"
-                   "Diagram contains an internally-handled event TIME_TICK_1S_SIG, "
-                   "which leads to state transition under some condiiton. "
-                   "Is it supported? Should it be supported?")
     def testSamekConsistencyPlayerType(self):
         self.checkConsistency('player_type')
 

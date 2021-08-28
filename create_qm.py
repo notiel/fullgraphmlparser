@@ -40,11 +40,6 @@ exit_coordinates = "1,6,30,4"  # relative coordinates for exit action
 internal_trig_coordinates = "3,-1,20,0"  # relative coordinate for start of internal trigger label
 trig_action_coordinates = "0,-2,25,4"  # relative coordinates for trigger label
 
-# list of types from qpc framework
-type_list = ['uint8_t', 'uint16_t', "uint32_t", "int8_t", "int16_t", "int32_t", "uint_fast8_t", "uint_fast16_t"
-                                                                                                "uint_t", "int_t",
-             "enum_t", "QSignal", "QEvt const *", "QTimeEvt", "QHsm", "QMsm", "QActive",
-             "QMActive", "QEQueue", "QMPool", "QPSet", 'void', "void*", "unsigned", "QStateHandler", "QState*"]
 vis_dict = {"public": "0x00", "private": "0x02", "protected": "0x01"}  # codes for visibility of variables
 
 
@@ -57,18 +52,15 @@ def get_parameters_data(parameter: str) -> Tuple[str, str, str, str]:
     data: List[str] = parameter.split()
     if len(data) < 2:
         return "", "", "", ""
-    if data[0] in type_list:
-        if data[0] == "unsigned":
-            if data[1] == 'int':
-                param_type = 'unsigned int'
-                i = 2
-            else:
-                return "", "", "", ""
+    if data[0] == "unsigned":
+        if data[1] == 'int':
+            param_type = 'unsigned int'
+            i = 2
         else:
-            param_type = data[0]
-            i = 1
+            return "", "", "", ""
     else:
-        return "", "", "", ""
+        param_type = data[0]
+        i = 1
     param_name: str = data[i].replace(";", "")
     param_name.replace(";", "")
     param_name.replace("/", "")

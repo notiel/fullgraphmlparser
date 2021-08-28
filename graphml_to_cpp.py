@@ -18,6 +18,7 @@ class CppFileWriter:
         self.player_signal = player_signal
 
         notes_mapping = [('Code for h-file', 'raw_h_code'),
+                         ('Code for cpp-file', 'raw_cpp_code'),
          ('Constructor fields', 'constructor_fields'),
          ('State fields', 'state_fields'),
          ('Constructor code', 'constructor_code'),
@@ -46,6 +47,10 @@ class CppFileWriter:
             self._write_initial()
             self._write_states_definitions_recursively(self.states[0], 'SMs::%s::SM' % self._sm_capitalized_name())
             self._insert_file_template('footer_c.txt')
+            if self.notes_dict['raw_cpp_code']:
+                self._insert_string('\n//Start of c code from diagram\n')
+                self._insert_string('\n'.join(self.notes_dict['raw_cpp_code'].split('\n')[1:]) + '\n')
+                self._insert_string('//End of c code from diagram\n\n\n')
             self.f = None
 
         with open(os.path.join(folder, '%s_new.h' % self.sm_name), 'w') as f:
