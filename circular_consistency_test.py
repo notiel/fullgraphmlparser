@@ -26,7 +26,7 @@ def getQmWithArgs():
         #    let's use some well-defined path where we can install QM to.
         # 2. We use qm.sh instead of qm as recommended by https://www.state-machine.com/qm/gs_run.html#gs_run_linux
         # 3. We add xvfb-run so it can run in screen-less environments (e.g. Github Actions)
-        return ['xvfb-run', './qm/bin/qm.sh']
+        return ['xvfb-run', '--auto-servernum', '--server-num=1', './qm/bin/qm.sh']
 
     raise NotImplementedError('Only windows and linux are supported')
 
