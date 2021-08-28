@@ -243,7 +243,7 @@ class CppFileWriter:
                 self._write_trigger(self.f, triggers[1], state_path, event_name, '    ')
                 self._insert_string('            }\n')
             else:
-                self._insert_string('!!! "else if" guards are not supported !!!')
+                raise Exception('"else if" guards are not supported')
             self._insert_string('            break;\n')
             self._insert_string('        }\n')
 
@@ -299,4 +299,4 @@ class CppFileWriter:
             self._write_trigger(self.f, triggers[1], state_path, event_name, offset + '    ')
             self._insert_string(offset + '            }\n')
         else:
-            self._insert_string("// FIXME!!! Invalid trigger type: %s\n" % trigger)
+            raise Exception('Unknown trigger type: %s' % trigger.type)
