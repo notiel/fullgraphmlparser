@@ -49,9 +49,10 @@ class CppFileWriter:
             self.f = f
             self._insert_file_template('preamble_h.txt')
 
-            self._insert_string('//Start of h code from diagram\n')
-            self._insert_string('\n'.join(self.notes_dict['raw_h_code'].split('\n')[1:]) + '\n')
-            self._insert_string('//End of h code from diagram\n\n\n')
+            if self.notes_dict['raw_h_code']:
+                self._insert_string('//Start of h code from diagram\n')
+                self._insert_string('\n'.join(self.notes_dict['raw_h_code'].split('\n')[1:]) + '\n')
+                self._insert_string('//End of h code from diagram\n\n\n')
 
             self._write_full_line_comment('.$declare${SMs::STATE_MACHINE_CAPITALIZED_NAME}', 'v')
             self._write_full_line_comment('.${SMs::STATE_MACHINE_CAPITALIZED_NAME}', '.')
@@ -82,9 +83,13 @@ class CppFileWriter:
             self._insert_string('extern QHsm * const the_STATE_MACHINE_NAME; /* opaque pointer to the STATE_MACHINE_NAME HSM */\n\n')
             self._write_full_line_comment('.$declare${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', 'v')
             self._write_full_line_comment('.${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', '.')
-            self._insert_string('void STATE_MACHINE_CAPITALIZED_NAME_ctor(\n')
+            self._insert_string('void STATE_MACHINE_CAPITALIZED_NAME_ctor(')
             constructor_fields: str = self.notes_dict['constructor_fields']
-            self._insert_string('    ' + ',\n    '.join(constructor_fields.replace(';', '').split('\n')[1:]) + ');\n')
+            if constructor_fields:
+                self._insert_string(
+                    '\n    ' + ',\n    '.join(constructor_fields.replace(';', '').split('\n')[1:]) + ');\n')
+            else:
+                self._insert_string('void);\n')
             self._write_full_line_comment('.$enddecl${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', '^')
             self._insert_file_template('footer_h.txt')
             self.f = None
@@ -92,10 +97,13 @@ class CppFileWriter:
     def _write_constructor(self):
         self._write_full_line_comment('.$define${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', 'v')
         self._write_full_line_comment('.${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', '.')
-        self._insert_string('void STATE_MACHINE_CAPITALIZED_NAME_ctor(\n')
+        self._insert_string('void STATE_MACHINE_CAPITALIZED_NAME_ctor(')
         constructor_fields: str = self.notes_dict['constructor_fields']
-        self._insert_string('    ' + ',\n    '.join(constructor_fields.replace(';', '').split('\n')[1:]) + ')\n')
-        self._insert_string('{\n')
+        if constructor_fields:
+            self._insert_string('\n    ' + ',\n    '.join(constructor_fields.replace(';', '').split('\n')[1:]) + ')\n')
+            self._insert_string('{\n')
+        else:
+            self._insert_string('void) {\n')
         self._insert_string('    STATE_MACHINE_CAPITALIZED_NAME *me = &STATE_MACHINE_NAME;\n')
         constructor_code: str = self.notes_dict['constructor_code']
         self._insert_string('     ' + '\n    '.join(constructor_code.replace('\r', '').split('\n')[1:]))

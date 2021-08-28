@@ -143,11 +143,10 @@ class CircularConsistencyTest(unittest.TestCase):
     def testSamekConsistencyHealth(self):
         self.checkConsistency('health')
 
-    @unittest.skip("Whitespace difference in condition, void constructor")
+    @unittest.skip("Whitespace difference in condition")
     def testSamekConsistencyKaCounter(self):
         self.checkConsistency('kaCounter')
 
-    @unittest.skip("void constructor")
     def testSamekConsistencyKaTet(self):
         self.checkConsistency('kaTet')
 
@@ -155,7 +154,6 @@ class CircularConsistencyTest(unittest.TestCase):
     def testSamekConsistencyPlayerType(self):
         self.checkConsistency('player_type')
 
-    @unittest.skip("void constructor")
     def testSamekConsistencyChoice1(self):
         self.checkConsistency('choice1')
 
