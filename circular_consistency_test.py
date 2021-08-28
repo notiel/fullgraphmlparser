@@ -131,7 +131,13 @@ class CircularConsistencyTest(unittest.TestCase):
     def testSamekConsistencyOregon(self):
         self.checkConsistency('oregonPlayer')
 
-    @unittest.skip("Whitespace differences")
+    @unittest.skip("Here new C++ generator generates correct, but going through Samek "
+                   "leads to guard for internal trigger being completely missing. "
+                   "It happens because create_qm.get_internal_trigger_code doesn't"
+                   "use trigger guard in any way."
+                   "There is also unrelated minor difference in the constructor:"
+                   "Samek's generator puts all argument to a single line,"
+                   "ours uses separate line for each argument.")
     def testSamekConsistencyAbility(self):
         self.checkConsistency('ability')
 
