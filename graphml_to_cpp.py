@@ -34,6 +34,9 @@ class CppFileWriter:
         self.states = states
         for state in states:
             self.id_to_name[state.id] = state.name
+            for trigger in state.trigs:
+                if trigger.guard:
+                    trigger.guard = trigger.guard.strip()
 
     def write_to_file(self, folder: str):
         with open(os.path.join(folder, '%s_new.cpp' % self.sm_name), 'w') as f:
@@ -251,7 +254,7 @@ class CppFileWriter:
     def _write_trigger(self, f, trigger: Trigger, state_path: str, event_name: str, offset = ''):
         if trigger.action and not trigger.type == 'choice_start':
             self._insert_string('\n'.join(
-                [offset + '            ' + line for line in trigger.action.strip().split('\n')]) + '\n')
+                [offset + '            ' + line for line in trigger.action.split('\n')]) + '\n')
         if trigger.type == 'internal':
             self._insert_string(offset + '            status_ = Q_HANDLED();\n')
         elif trigger.type == 'external' or trigger.type == 'choice_result':

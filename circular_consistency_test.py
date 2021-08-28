@@ -143,7 +143,6 @@ class CircularConsistencyTest(unittest.TestCase):
     def testSamekConsistencyHealth(self):
         self.checkConsistency('health')
 
-    @unittest.skip("Whitespace difference in condition")
     def testSamekConsistencyKaCounter(self):
         self.checkConsistency('kaCounter')
 
