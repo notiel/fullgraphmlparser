@@ -1,5 +1,6 @@
 .*
 !/.gitignore
+!/.idea
 __*
 *.qm
 __pycache__
