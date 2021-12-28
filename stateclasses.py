@@ -11,10 +11,6 @@ from typing import List, Tuple, Optional
         target: target state of trigger (actual for external triggers)
         action: action for this trigger if any
         id: order number of internal trigger for better coordinates
-        x, y: start of trigger visual path
-        dx, dy: first relative movement of trigger visual path
-        points: other relative movements of trigger visual path
-        action_x, action_y, action_width: coordinates of trigger label
 """
 
 
@@ -24,15 +20,7 @@ class Trigger:
     source: str
     target: str
     action: str
-    id: int
-    x: int
-    y: int
-    dx: int
-    dy: int
-    points: List[Tuple[int, int]]
-    action_x: int
-    action_y: int
-    action_width: int
+    # id: int
     type: str = "internal"
     guard: str = ""
 
@@ -48,8 +36,6 @@ class Trigger:
         id: number of state
         actions: raw_data for external actions
         old_id: id of state in graphml
-        x, y: graphical coordinates
-        height, width: height and with of node
 """
 
 
@@ -63,9 +49,5 @@ class State:
     exit: str
     id: str
     new_id: List[str]
-    x: int
-    y: int
-    width: int
-    height: int
     parent: Optional['State']
     childs: List['State']

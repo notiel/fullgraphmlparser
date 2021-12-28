@@ -42,8 +42,8 @@ def get_states_from_graphml(filename: str):
 
 # test2
 
-def main(filenames: Union[List[str], str]):
 
+def main(filenames: Union[List[str], str]):
     player_signal = list()
     if not isinstance(filenames, list):
         filenames = [filenames]

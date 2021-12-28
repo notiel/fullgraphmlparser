@@ -1,7 +1,6 @@
 from collections import OrderedDict
 import os
 from pathlib import Path
-import sys
 import unittest
 
 import xmltodict
@@ -12,12 +11,12 @@ import cpp_to_graphml
 class StateMachineParserTest(unittest.TestCase):
 
     def testNumberOfStates(self):
-        parser = cpp_to_graphml.StateMachineParser(cpp_file_path = './testdata/oregonPlayer.cpp')
+        parser = cpp_to_graphml.StateMachineParser(cpp_file_path='./testdata/oregonPlayer.cpp')
         sm = parser.Parse()
         self.assertEqual(len(sm.states), 15)
 
     def testHeaderParsed(self):
-        parser = cpp_to_graphml.StateMachineParser(cpp_file_path = './testdata/oregonPlayer.cpp')
+        parser = cpp_to_graphml.StateMachineParser(cpp_file_path='./testdata/oregonPlayer.cpp')
         sm = parser.Parse()
         self.assertTrue(sm.raw_h_code)
         self.assertTrue(sm.raw_h_code.startswith('#define'))
@@ -38,10 +37,12 @@ unsigned int TimerAgony;''')
         self.assertEqual(sm.initial_code, 'return Q_TRAN(me->StartState);')
         self.assertEqual(sm.initial_state, 'healthy')
 
+
 class StateMachineWriterTest(unittest.TestCase):
     OUTPUT_FILE = './testdata/output.graphml'
+
     def removeOutputFile(self):
-        if (os.path.exists(self.OUTPUT_FILE)):
+        if os.path.exists(self.OUTPUT_FILE):
             os.remove(self.OUTPUT_FILE)
 
     def setUp(self):
@@ -51,7 +52,7 @@ class StateMachineWriterTest(unittest.TestCase):
         self.removeOutputFile()
 
     def testValidGraphml(self):
-        parser = cpp_to_graphml.StateMachineParser(cpp_file_path = './testdata/oregonPlayer.cpp')
+        parser = cpp_to_graphml.StateMachineParser(cpp_file_path='./testdata/oregonPlayer.cpp')
         cpp_to_graphml.StateMachineWriter(parser.Parse()).WriteToFile(self.OUTPUT_FILE)
         output_file = Path(self.OUTPUT_FILE)
         # Test that output file is present ...
@@ -62,6 +63,7 @@ class StateMachineWriterTest(unittest.TestCase):
             xml_dict = xmltodict.parse(f.read())
             self.assertTrue(xml_dict)
             self.assertIsInstance(xml_dict['graphml'], OrderedDict)
+
 
 if __name__ == '__main__':
     unittest.main()

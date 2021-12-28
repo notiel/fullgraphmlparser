@@ -49,12 +49,14 @@ class CircularConsistencyTest(unittest.TestCase):
 
         self.maxDiff = None
 
-        # This one is quite fragile as literally any change in the output will break it. Not sure if it's actually needed.
+        # This one is quite fragile as literally any change in the output will break it.
+        # Not sure if it's actually needed.
         with open('./testdata/oregonPlayer.cpp', 'r') as f:
             sm1_cpp_content = f.read()
         with open('./testdata/test_output/oregonPlayer.cpp', 'r') as f:
             sm2_cpp_content = f.read()
         self.assertEqual(sm1_cpp_content, sm2_cpp_content)
+
 
 if __name__ == '__main__':
     unittest.main()

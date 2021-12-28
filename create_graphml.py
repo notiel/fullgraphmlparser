@@ -2,6 +2,7 @@ from lxml import etree
 import xmltodict
 from typing import List, Tuple
 
+# noinspection PyProtectedMember
 Tag = etree._Element
 
 namespace_dict = {None: "http://graphml.graphdrawing.org/xmlns",
@@ -289,6 +290,7 @@ def add_group_node(parent: Tag, node_text: str, content: str, node_id: str,
     proxy = etree.SubElement(data, etree.QName(nmspc_y, "ProxyAutoBoundsNode"))
     realizers = etree.SubElement(proxy, etree.QName(nmspc_y, "Realizers"), active='0')
 
+    # noinspection PyShadowingNames
     group_node = etree.SubElement(realizers, etree.QName(nmspc_y, "GroupNode"))
     _ = etree.SubElement(group_node, etree.QName(nmspc_y, "Geometry"),
                          height=str(h), width=str(w), x=str(x0), y=str(y0))
@@ -499,11 +501,11 @@ if __name__ == '__main__':
     add_simple_node(group_graph, 'idle', 'lorem ipsum', 'n0::n0', 100, 200, 374, 214)
     add_simple_node(graph, 'not_idle', 'lorem ipsum', 'n1', 100, 200, 734, 213)
     add_choice_state(graph, "n3")
-    add_edge(graph, "e0", "n0::n0", "n1", 'TEST TRIGGER', 0, 0, 0, 0)
-    add_edge(graph, "e1", "n2", "n1", "initial", 0, 0, 0, 0)
-    add_edge(graph, "e2", "n1", "n3", "choice_trigger", 0, 0, 0, 0)
-    add_edge(graph, "e3", "n3", "n0::n0", "guard1", 0, 0, 0, 0)
-    add_edge(graph, "e4", "n3", "n0", "guard2", 0, 0, 0, 0)
+    add_edge(graph, "e0", "n0::n0", "n1", 'TEST TRIGGER', 0, 0, 0, 0, list())
+    add_edge(graph, "e1", "n2", "n1", "initial", 0, 0, 0, 0, list())
+    add_edge(graph, "e2", "n1", "n3", "choice_trigger", 0, 0, 0, 0, list())
+    add_edge(graph, "e3", "n3", "n0::n0", "guard1", 0, 0, 0, 0, list())
+    add_edge(graph, "e4", "n3", "n0", "guard2", 0, 0, 0, 0, list())
     get_c_code_comment(graph, "n4", "some code here")
     get_constructor_code_comment(graph, 'n5', "me->test_field = test")
     get_constructor_fields_comment(graph, 'n6', "unsigned int: test_constructor")
