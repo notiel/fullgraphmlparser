@@ -6,6 +6,7 @@ from graphml import *
 from typing import List, Tuple
 from stateclasses import State, Trigger
 
+
 def get_enum(text_labels: List[str]) -> str:
     """
     prepares list of signals for enum structure for c language: joins them into one string comma and \n-separated
@@ -23,22 +24,24 @@ def get_enum(text_labels: List[str]) -> str:
     enum = enum + ',\n\nLAST_USER_SIG\n};'
     return enum
 
+
 class CppFileWriter:
     id_to_name = {}
     notes_dict = {}
     f = None
     all_signals = []
 
-    def __init__(self, sm_name: str, start_node: str, start_action: str, states: List[State], notes: List[Dict[str, Any]], player_signal: List[str]):
+    def __init__(self, sm_name: str, start_node: str, start_action: str, states: List[State],
+                 notes: List[Dict[str, Any]], player_signal: List[str]):
         self.sm_name = sm_name
         self.player_signal = player_signal
 
         notes_mapping = [('Code for h-file', 'raw_h_code'),
                          ('Code for cpp-file', 'raw_cpp_code'),
-         ('Constructor fields', 'constructor_fields'),
-         ('State fields', 'state_fields'),
-         ('Constructor code', 'constructor_code'),
-         ('Event fields', 'event_fields')]
+                         ('Constructor fields', 'constructor_fields'),
+                         ('State fields', 'state_fields'),
+                         ('Constructor code', 'constructor_code'),
+                         ('Event fields', 'event_fields')]
         self.notes_dict = {key: '' for _, key in notes_mapping}
 
         for note in notes:
@@ -89,14 +92,16 @@ class CppFileWriter:
             self._insert_string('    ' + '\n    '.join(constructor_fields.split('\n')[1:]) + '\n')
             self._insert_string('} STATE_MACHINE_CAPITALIZED_NAME;\n\n')
             self._insert_string('/* protected: */\n')
-            self._insert_string('QState STATE_MACHINE_CAPITALIZED_NAME_initial(STATE_MACHINE_CAPITALIZED_NAME * const me, void const * const par);\n')
+            self._insert_string(
+                'QState STATE_MACHINE_CAPITALIZED_NAME_initial(STATE_MACHINE_CAPITALIZED_NAME * const me, void const * const par);\n')
             self._write_states_declarations_recursively(self.states[0])
             self._insert_string('\n#ifdef DESKTOP\n')
             self._insert_string(
                 'QState STATE_MACHINE_CAPITALIZED_NAME_final(STATE_MACHINE_CAPITALIZED_NAME * const me, QEvt const * const e);\n')
             self._insert_string('#endif /* def DESKTOP */\n\n')
             self._write_full_line_comment('.$enddecl${SMs::STATE_MACHINE_CAPITALIZED_NAME}', '^')
-            self._insert_string('\nstatic STATE_MACHINE_CAPITALIZED_NAME STATE_MACHINE_NAME; /* the only instance of the STATE_MACHINE_CAPITALIZED_NAME class */\n\n\n\n')
+            self._insert_string(
+                '\nstatic STATE_MACHINE_CAPITALIZED_NAME STATE_MACHINE_NAME; /* the only instance of the STATE_MACHINE_CAPITALIZED_NAME class */\n\n\n\n')
 
             self._insert_string('typedef struct STATE_MACHINE_NAMEQEvt {\n')
             self._insert_string('    QEvt super;\n')
@@ -104,7 +109,8 @@ class CppFileWriter:
             self._insert_string('    ' + '\n    '.join(event_fields.split('\n')[1:]) + '\n')
             self._insert_string('} STATE_MACHINE_NAMEQEvt;\n\n')
             self._insert_string(get_enum(self.player_signal) + '\n')
-            self._insert_string('extern QHsm * const the_STATE_MACHINE_NAME; /* opaque pointer to the STATE_MACHINE_NAME HSM */\n\n')
+            self._insert_string(
+                'extern QHsm * const the_STATE_MACHINE_NAME; /* opaque pointer to the STATE_MACHINE_NAME HSM */\n\n')
             self._write_full_line_comment('.$declare${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', 'v')
             self._write_full_line_comment('.${SMs::STATE_MACHINE_CAPITALIZED_NAME_ctor}', '.')
             self._insert_string('void STATE_MACHINE_CAPITALIZED_NAME_ctor(')
@@ -154,7 +160,8 @@ class CppFileWriter:
         guard_tokens = guard.replace('+', ' ').split(' ')
         shortened_guard = guard_tokens[0]
         i_token = 1
-        while i_token < len(guard_tokens) and len(prefix) + len(shortened_guard) + len(guard_tokens[i_token]) + len(suffix) <= 121:
+        while i_token < len(guard_tokens) and len(prefix) + len(shortened_guard) + len(guard_tokens[i_token]) + len(
+                suffix) <= 121:
             shortened_guard = shortened_guard + guard_tokens[i_token]
             i_token = i_token + 1
         if i_token != len(guard_tokens):
@@ -163,14 +170,16 @@ class CppFileWriter:
         return self._insert_string(prefix + shortened_guard + suffix)
 
     def _write_full_line_comment(self, text: str, filler: str):
-        self._insert_string(('/*' + text.replace('STATE_MACHINE_NAME', self.sm_name).replace('STATE_MACHINE_CAPITALIZED_NAME', self._sm_capitalized_name()) + ' ').ljust(76, filler) + '*/\n')
+        self._insert_string(('/*' + text.replace('STATE_MACHINE_NAME', self.sm_name).replace(
+            'STATE_MACHINE_CAPITALIZED_NAME', self._sm_capitalized_name()) + ' ').ljust(76, filler) + '*/\n')
 
     def _sm_capitalized_name(self) -> str:
         return self.sm_name[0].upper() + self.sm_name[1:]
 
     def _insert_string(self, s: str):
         self.f.write(re.sub('[ ]*\n', '\n',
-                       s.replace('STATE_MACHINE_NAME', self.sm_name).replace('STATE_MACHINE_CAPITALIZED_NAME', self._sm_capitalized_name())))
+                            s.replace('STATE_MACHINE_NAME', self.sm_name).replace('STATE_MACHINE_CAPITALIZED_NAME',
+                                                                                  self._sm_capitalized_name())))
 
     def _insert_file_template(self, filename: str):
         with open(os.path.join('templates', filename)) as input_file:
@@ -182,7 +191,8 @@ class CppFileWriter:
         state_comment = '/*.${' + state_path + '} '
         state_comment = state_comment + '.' * (76 - len(state_comment)) + '*/\n'
         self.f.write(state_comment)
-        self._insert_string('QState STATE_MACHINE_CAPITALIZED_NAME_%s(STATE_MACHINE_CAPITALIZED_NAME * const me, QEvt const * const e) {\n' % state.name)
+        self._insert_string(
+            'QState STATE_MACHINE_CAPITALIZED_NAME_%s(STATE_MACHINE_CAPITALIZED_NAME * const me, QEvt const * const e) {\n' % state.name)
         self._insert_string('    QState status_;\n')
         self._insert_string('    switch (e->sig) {\n')
 
@@ -191,14 +201,14 @@ class CppFileWriter:
         else:
             self._insert_string('        /*.${' + state_path + '} */\n')
             self._insert_string('        case Q_ENTRY_SIG: {\n')
-            self._insert_string('\n'.join(['            ' + line for line in state.entry.split('\n')])  + '\n')
+            self._insert_string('\n'.join(['            ' + line for line in state.entry.split('\n')]) + '\n')
             self._insert_string('            status_ = Q_HANDLED();\n')
             self._insert_string('            break;\n')
             self._insert_string('        }\n')
 
             self._insert_string('        /*.${' + state_path + '} */\n')
             self._insert_string('        case Q_EXIT_SIG: {\n')
-            self._insert_string('\n'.join(['            ' + line for line in state.exit.split('\n')])  + '\n')
+            self._insert_string('\n'.join(['            ' + line for line in state.exit.split('\n')]) + '\n')
             self._insert_string('            status_ = Q_HANDLED();\n')
             self._insert_string('            break;\n')
             self._insert_string('        }\n')
@@ -215,7 +225,7 @@ class CppFileWriter:
 
         triggers_merged: List[Tuple[str, List[Trigger]]] = sorted(
             [(name, name_to_triggers[name]) for name in name_to_triggers],
-            key = lambda t: name_to_position[t[0]])
+            key=lambda t: name_to_position[t[0]])
 
         for event_name, triggers in triggers_merged:
             self._insert_string('        /*.${%s::%s} */\n' % (state_path, event_name))
@@ -249,7 +259,8 @@ class CppFileWriter:
 
         self._insert_string('        default: {\n')
         if state.parent:
-            self._insert_string('            status_ = Q_SUPER(&STATE_MACHINE_CAPITALIZED_NAME_%s);\n' % state.parent.name)
+            self._insert_string(
+                '            status_ = Q_SUPER(&STATE_MACHINE_CAPITALIZED_NAME_%s);\n' % state.parent.name)
         else:
             self._insert_string('            status_ = Q_SUPER(&QHsm_top);\n')
         self._insert_string('            break;\n')
@@ -264,23 +275,25 @@ class CppFileWriter:
         for trigger in state.trigs:
             if '?def' in trigger.name:
                 continue
-            if not trigger.name in self.all_signals:
+            if trigger.name not in self.all_signals:
                 self.all_signals.append(trigger.name)
 
     def _write_states_declarations_recursively(self, state: State):
-        self._insert_string('QState STATE_MACHINE_CAPITALIZED_NAME_%s(STATE_MACHINE_CAPITALIZED_NAME * const me, QEvt const * const e);\n' % state.name)
+        self._insert_string(
+            'QState STATE_MACHINE_CAPITALIZED_NAME_%s(STATE_MACHINE_CAPITALIZED_NAME * const me, QEvt const * const e);\n' % state.name)
         for child_state in state.childs:
             self._write_states_declarations_recursively(child_state)
 
-    def _write_trigger(self, f, trigger: Trigger, state_path: str, event_name: str, offset = ''):
+    def _write_trigger(self, f, trigger: Trigger, state_path: str, event_name: str, offset=''):
         if trigger.action and not trigger.type == 'choice_start':
             self._insert_string('\n'.join(
                 [offset + '            ' + line for line in trigger.action.split('\n')]) + '\n')
         if trigger.type == 'internal':
             self._insert_string(offset + '            status_ = Q_HANDLED();\n')
         elif trigger.type == 'external' or trigger.type == 'choice_result':
-            self._insert_string(offset + '            status_ = Q_TRAN(&STATE_MACHINE_CAPITALIZED_NAME_%s);\n' % self.id_to_name[
-                                    trigger.target])
+            self._insert_string(
+                offset + '            status_ = Q_TRAN(&STATE_MACHINE_CAPITALIZED_NAME_%s);\n' % self.id_to_name[
+                    trigger.target])
         elif trigger.type == 'choice_start':
             target_choice_node = next((s for s in self.states if s.id == trigger.target and s.type == 'choice'), None)
             assert target_choice_node

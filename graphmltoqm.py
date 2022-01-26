@@ -1,7 +1,7 @@
 import xmltodict
 import qm
 import graphml as gr
-import service_files
+# import service_files
 from graphml_to_cpp import CppFileWriter
 from logger import logging
 import sys
@@ -28,7 +28,7 @@ def get_states_from_graphml(filename: str):
     state_nodes.sort(key=gr.coord_sort)
     coords = gr.get_minmax_coord(state_nodes)  # get min and max coord and height and widt of scheme
     # create states from nodes and add internal triggers to list of signals and all functions to function list
-    qm_states, player_signal = qm.create_states_from_nodes(state_nodes, coords, [], [])
+    qm_states, player_signal = qm.create_states_from_nodes(state_nodes, coords, [])
     # get edges for external triggers
     flat_edges = gr.get_flat_edges(data)
     try:
@@ -37,7 +37,7 @@ def get_states_from_graphml(filename: str):
         logging.error('UML-diagram %s.graphml does not have start node' % filename)
         return list(), 0, 0
     # add external trigger and update list of signals with them
-    _ = qm.update_states_with_edges(qm_states, flat_edges, start, player_signal, coords[0], coords[1])
+    _ = qm.update_states_with_edges(qm_states, flat_edges, start, player_signal)
     return qm_states, coords[0], coords[1]
 
 # test2
@@ -66,10 +66,10 @@ def main(filenames: Union[List[str], str]):
         gr.update_qroup_nodes(state_nodes)
         state_nodes.sort(key=gr.coord_sort)
 
-        coords = gr.get_minmax_coord(state_nodes)      # get min and max coord and height and widt of scheme
+        # coords = gr.get_minmax_coord(state_nodes)      # get min and max coord and height and width of scheme
         # create states from nodes and add internal triggers to list of signals and all functions to function list
         functions: List[str] = list()
-        qm_states, player_signal = qm.create_states_from_nodes(state_nodes, coords, player_signal, functions)
+        qm_states, player_signal = qm.create_states_from_nodes(state_nodes, player_signal, functions)
         # get edges for external triggers
         flat_edges = gr.get_flat_edges(data)
         try:
@@ -78,15 +78,18 @@ def main(filenames: Union[List[str], str]):
             logging.error('UML-diagram %s.graphml does not have start node' % filename)
             continue
         # add external trigger and update list of signals with them
-        player_signal = qm.update_states_with_edges(qm_states, flat_edges, start, player_signal, coords[0], coords[1])
+        player_signal = qm.update_states_with_edges(qm_states, flat_edges, start, player_signal)
         # get notes
         notes = [node for node in flat_nodes if gr.is_node_a_note(node)]
         # TODO(aeremin) Extract to separate file.
         CppFileWriter(modelname, start_node, start_action, qm_states, notes, player_signal).write_to_file(os.path.dirname(filename))
 
-    service_files.create_files(os.path.dirname(filenames[0]), player_signal, modelname, functions)
+    # service_files.create_files(os.path.dirname(filenames[0]), player_signal, modelname, functions)
 
 
 if __name__ == '__main__':
-    states = get_states_from_graphml(sys.argv[1:][0])
-    main(sys.argv[1:])
+    if (len(sys.argv)) >= 2:
+        states = (sys.argv[1:][0])
+        main(sys.argv[1:])
+    else:
+        print("No file name")

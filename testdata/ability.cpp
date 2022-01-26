@@ -1,10 +1,10 @@
-/*.$file${.::ability.cpp} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
+/*.$file${.::ability.cpp} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
 /*
 * Model: ability.qm
 * File:  ${.::ability.cpp}
 *
 */
-/*.$endhead${.::ability.cpp} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+/*.$endhead${.::ability.cpp} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 #include "qhsm.h"
 #include "ability.h"
 #include "eventHandlers.h"
@@ -37,6 +37,7 @@ void Ability_ctor(
 /*.${SMs::Ability::SM} .....................................................*/
 QState Ability_initial(Ability * const me, void const * const par) {
     /*.${SMs::Ability::SM::initial} */
+
     return Q_TRAN(&Ability_idle);
 }
 /*.${SMs::Ability::SM::global} .............................................*/
@@ -59,145 +60,9 @@ QState Ability_global(Ability * const me, QEvt const * const e) {
     }
     return status_;
 }
-/*.${SMs::Ability::SM::global::ability} ....................................*/
-QState Ability_ability(Ability * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /*.${SMs::Ability::SM::global::ability} */
-        case Q_ENTRY_SIG: {
-            #ifdef DESKTOP
-            printf("Entered state ability");
-            #endif /* def DESKTOP */
-            FlashAbilityColor();
-            me->ability_pause = 0;
-            status_ = Q_HANDLED();
-            break;
-        }
-        /*.${SMs::Ability::SM::global::ability} */
-        case Q_EXIT_SIG: {
-            #ifdef DESKTOP
-            printf("Exited state ability");
-            #endif /* def DESKTOP */
-
-            status_ = Q_HANDLED();
-            break;
-        }
-        default: {
-            status_ = Q_SUPER(&Ability_global);
-            break;
-        }
-    }
-    return status_;
-}
-/*.${SMs::Ability::SM::global::ability::idle} ..............................*/
-QState Ability_idle(Ability * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /*.${SMs::Ability::SM::global::ability::idle} */
-        case Q_ENTRY_SIG: {
-            #ifdef DESKTOP
-            printf("Entered state idle");
-            #endif /* def DESKTOP */
-            SavePause();
-            status_ = Q_HANDLED();
-            break;
-        }
-        /*.${SMs::Ability::SM::global::ability::idle} */
-        case Q_EXIT_SIG: {
-            #ifdef DESKTOP
-            printf("Exited state idle");
-            #endif /* def DESKTOP */
-
-            status_ = Q_HANDLED();
-            break;
-        }
-        /*.${SMs::Ability::SM::global::ability::idle::TIME_TICK_1M} */
-        case TIME_TICK_1M_SIG: {
-            /*.${SMs::Ability::SM::global::ability::idle::TIME_TICK_1M::[me->ability_pause>0]} */
-            if (me->ability_pause > 0) {
-                me->ability_pause--;
-                SavePause();
-                status_ = Q_HANDLED();
-            }
-            else {
-                status_ = Q_UNHANDLED();
-            }
-            break;
-        }
-        /*.${SMs::Ability::SM::global::ability::idle::PILL_ABILITY} */
-        case PILL_ABILITY_SIG: {
-            me->ability = e->id;
-            FlashAbilityColor();
-            SaveAbility(me->ability);
-            status_ = Q_HANDLED();
-            break;
-        }
-        /*.${SMs::Ability::SM::global::ability::idle::LONG_PRESS_THIRD} */
-        case LONG_PRESS_THIRD_SIG: {
-            /*.${SMs::Ability::SM::global::ability::idle::LONG_PRESS_THIRD::[me->ability_pause==0]} */
-            if (me->ability_pause == 0) {
-                status_ = Q_TRAN(&Ability_active);
-            }
-            /*.${SMs::Ability::SM::global::ability::idle::LONG_PRESS_THIRD::[else]} */
-            else {
-                FlashWrong();
-                status_ = Q_HANDLED();
-            }
-            break;
-        }
-        default: {
-            status_ = Q_SUPER(&Ability_ability);
-            break;
-        }
-    }
-    return status_;
-}
-/*.${SMs::Ability::SM::global::ability::active} ............................*/
-QState Ability_active(Ability * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /*.${SMs::Ability::SM::global::ability::active} */
-        case Q_ENTRY_SIG: {
-            #ifdef DESKTOP
-            printf("Entered state active");
-            #endif /* def DESKTOP */
-            StartAbility();
-            me->count = 0;
-            status_ = Q_HANDLED();
-            break;
-        }
-        /*.${SMs::Ability::SM::global::ability::active} */
-        case Q_EXIT_SIG: {
-            #ifdef DESKTOP
-            printf("Exited state active");
-            #endif /* def DESKTOP */
-            me->ability_pause = ABILITY_PAUSE_M;
-            status_ = Q_HANDLED();
-            break;
-        }
-        /*.${SMs::Ability::SM::global::ability::active::TIME_TICK_1S} */
-        case TIME_TICK_1S_SIG: {
-            /*.${SMs::Ability::SM::global::ability::active::TIME_TICK_1S::[me->count>=ABILITY_THRESHOLD_1S~} */
-            if (me->count >= ABILITY_THRESHOLD_1S) {
-                status_ = Q_TRAN(&Ability_idle);
-            }
-            /*.${SMs::Ability::SM::global::ability::active::TIME_TICK_1S::[else]} */
-            else {
-                me->count++;
-                status_ = Q_HANDLED();
-            }
-            break;
-        }
-        default: {
-            status_ = Q_SUPER(&Ability_ability);
-            break;
-        }
-    }
-    return status_;
-}
 
 #ifdef DESKTOP
-/*.${SMs::Ability::SM::final} ..............................................*/
+/*.${SMs::Ability::SM::final} .........................................*/
 QState Ability_final(Ability * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
@@ -218,7 +83,7 @@ QState Ability_final(Ability * const me, QEvt const * const e) {
 }
 #endif /* def DESKTOP */
 
-/*.$enddef${SMs::Ability} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+/*.$enddef${SMs::Ability} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 
 
 /*tranlated from diagrams code*/

@@ -242,7 +242,7 @@ def update_states_with_edges(states: [State], flat_edges: [dict], start_state: s
                         player_signal.append(trigger_name)
             except KeyError:
                 continue
-    update_state_ids(states)
+    # update_state_ids(states)
     return player_signal
 
 
@@ -265,26 +265,26 @@ def add_terminal_trigger(states):
     first.trigs.append(trigger)
 
 
-def update_state_ids(states: [State]):
-    """
-    updates state ids to get path in ids
-    :param states: list of states
-    :return:
-    """
-    states.sort(key=lambda st: st.x)
-    for i in range(0, len(states)):
-        if states[i].new_id[0] == '1':
-            states[i].new_id.append("1")
-        else:
-            if states[i].new_id[0] == '2':
-                states[i].new_id.append("2")
-            else:
-                len_brothers: int = len(states[i].parent.childs)
-                trigs = states[i].parent.trigs
-                len_trigs = len(set([trig.name for trig in trigs]))
-                states[i].new_id.append(states[i].parent.new_id[1] + "/" + str(len_brothers + len_trigs))
-                if states[i].type != 'choice':
-                    states[i].parent.childs.append(states[i])
+# ef update_state_ids(states: [State]):
+#    """
+#    updates state ids to get path in ids
+#    :param states: list of states
+#    :return:
+#    """
+#    states.sort(key=lambda st: st.x)
+#    for i in range(0, len(states)):
+#        if states[i].new_id[0] == '1':
+#            states[i].new_id.append("1")
+#        else:
+#            if states[i].new_id[0] == '2':
+#                states[i].new_id.append("2")
+#            else:
+#                len_brothers: int = len(states[i].parent.childs)
+#                trigs = states[i].parent.trigs
+#                len_trigs = len(set([trig.name for trig in trigs]))
+#                states[i].new_id.append(states[i].parent.new_id[1] + "/" + str(len_brothers + len_trigs))
+#                if states[i].type != 'choice':
+#                    states[i].parent.childs.append(states[i])
 
 
 def get_start_state_data(start_state: int, states: [State]) -> List[str]:

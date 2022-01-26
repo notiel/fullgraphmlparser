@@ -1,10 +1,10 @@
-/*.$file${.::ability.h} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
+/*.$file${.::ability.h} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
 /*
 * Model: ability.qm
 * File:  ${.::ability.h}
 *
 */
-/*.$endhead${.::ability.h} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+/*.$endhead${.::ability.h} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 #ifndef ability_h
 #define ability_h
 #ifdef __cplusplus
@@ -33,9 +33,6 @@ typedef struct {
 /* protected: */
 QState Ability_initial(Ability * const me, void const * const par);
 QState Ability_global(Ability * const me, QEvt const * const e);
-QState Ability_ability(Ability * const me, QEvt const * const e);
-QState Ability_idle(Ability * const me, QEvt const * const e);
-QState Ability_active(Ability * const me, QEvt const * const e);
 
 #ifdef DESKTOP
 QState Ability_final(Ability * const me, QEvt const * const e);
@@ -49,6 +46,7 @@ static Ability ability; /* the only instance of the Ability class */
 
 typedef struct abilityQEvt {
     QEvt super;
+
 } abilityQEvt;
 
 enum PlayerSignals {
